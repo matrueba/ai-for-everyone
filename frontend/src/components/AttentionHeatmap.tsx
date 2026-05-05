@@ -1,11 +1,23 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+
+interface AttentionData {
+  left_text: string[];
+  right_text: string[];
+  attn: number[][][][];
+}
+
+interface AttentionHeatmapProps {
+  data: AttentionData | null;
+  layer: number;
+  head: number;
+}
 
 /**
  * AttentionHeatmap — renders the attention matrix as an interactive heatmap.
  */
-export default function AttentionHeatmap({ data, layer, head }) {
-  const containerRef = useRef(null);
+const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!data || !containerRef.current) return;
@@ -31,7 +43,7 @@ export default function AttentionHeatmap({ data, layer, head }) {
 
     const colorScale = d3
       .scaleSequential(d3.interpolateViridis)
-      .domain([0, d3.max(attn.flat())]);
+      .domain([0, d3.max(attn.flat()) as number]);
 
     // Tooltip
     const tooltip = d3
@@ -64,7 +76,7 @@ export default function AttentionHeatmap({ data, layer, head }) {
           .attr("stroke-width", 2)
           .style("cursor", "crosshair")
           .style("transition", "stroke 0.15s")
-          .on("mouseenter", function (event) {
+          .on("mouseenter", function (this: SVGRectElement, event: MouseEvent) {
             d3.select(this).attr("stroke", "#0f172a");
             tooltip
               .style("opacity", 1)
@@ -74,12 +86,12 @@ export default function AttentionHeatmap({ data, layer, head }) {
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
           })
-          .on("mousemove", function (event) {
+          .on("mousemove", function (event: MouseEvent) {
             tooltip
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
           })
-          .on("mouseleave", function () {
+          .on("mouseleave", function (this: SVGRectElement) {
             d3.select(this).attr("stroke", "transparent");
             tooltip.style("opacity", 0);
           });
@@ -121,3 +133,5 @@ export default function AttentionHeatmap({ data, layer, head }) {
     <div ref={containerRef} style={{ position: "relative" }} />
   );
 }
+
+export default AttentionHeatmap;

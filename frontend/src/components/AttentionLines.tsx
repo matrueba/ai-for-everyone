@@ -1,5 +1,17 @@
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import * as d3 from "d3";
+
+interface AttentionData {
+  left_text: string[];
+  right_text: string[];
+  attn: number[][][][];
+}
+
+interface AttentionLinesProps {
+  data: AttentionData | null;
+  layer: number;
+  head: number;
+}
 
 /**
  * AttentionLines — SVG-based attention flow visualization.
@@ -7,8 +19,8 @@ import * as d3 from "d3";
  * opacity reflects attention weight. On hover, a single source
  * token is highlighted.
  */
-export default function AttentionLines({ data, layer, head }) {
-  const containerRef = useRef(null);
+const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!data || !containerRef.current) return;
@@ -79,14 +91,10 @@ export default function AttentionLines({ data, layer, head }) {
       g.on("mouseenter", () => {
         // Dim all lines
         linesG.selectAll("line").attr("stroke-opacity", 0.02);
+        
         // Highlight this source's lines
-        linesG.selectAll(`.line-src-${i}`).attr("stroke-opacity", (_, j, nodes) => {
-          return +d3.select(nodes[j]).attr("stroke-opacity") > 0.2
-            ? +attn[i][j]
-            : attn[i][j];
-        });
-        linesG.selectAll(`.line-src-${i}`).each(function (_, j) {
-          d3.select(this).attr("stroke-opacity", attn[i][j]);
+        linesG.selectAll<SVGLineElement, unknown>(`.line-src-${i}`).each(function (_, j) {
+          d3.select(this).attr("stroke-opacity", attn[i]?.[j] ?? 0);
         });
 
         // Highlight left token
@@ -97,25 +105,16 @@ export default function AttentionLines({ data, layer, head }) {
         rightText.forEach((_, j) => {
           svg
             .select(`.highlight-right-${j}`)
-            .attr("fill", `rgba(8,145,178,${attn[i][j] * 1.2})`);
+            .attr("fill", `rgba(8,145,178,${(attn[i]?.[j] ?? 0) * 1.2})`);
         });
       });
+      
       g.on("mouseleave", () => {
-        linesG.selectAll("line").each(function () {
-          const node = d3.select(this);
-          const cls = node.attr("class") || "";
-          const match = cls.match(/line-src-(\d+)/);
-          if (match) {
-            const s = +match[1];
-            const t = +[...node.node().parentNode.children].indexOf(node.node());
-            // Restore original opacities
-          }
-        });
-        // Simpler: just re-set all
+        // Restore all lines
         attn.forEach((row, si) => {
           row.forEach((w, ti) => {
             linesG
-              .selectAll(`.line-src-${si}`)
+              .selectAll<SVGLineElement, unknown>(`.line-src-${si}`)
               .filter((_, idx) => idx === ti)
               .attr("stroke-opacity", w);
           });
@@ -153,3 +152,5 @@ export default function AttentionLines({ data, layer, head }) {
 
   return <div ref={containerRef} />;
 }
+
+export default AttentionLines;

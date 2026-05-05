@@ -1,9 +1,9 @@
+import React from "react";
 
-
-export default function AttentionStory() {
+const AttentionStory: React.FC = () => {
   return (
-    <div className="lg:sticky lg:top-10 flex flex-col gap-8 max-h-[calc(100vh-80px)] overflow-y-auto pr-4 scrollbar-thin scrollbar-thumb-text-muted">
-      <div className="bg-surface-card border border-border-default rounded-3xl p-8 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)] max-w-lg lg:ml-auto w-full">
+    <div className="flex flex-col gap-8 w-full py-4 px-2">
+      <div className="bg-surface-card border border-border-default rounded-3xl p-8 sm:p-10 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_8px_24px_rgba(0,0,0,0.04)] max-w-3xl mx-auto w-full">
         <div className="flex items-center gap-3 mb-6">
           <div className="w-10 h-10 rounded-xl bg-accent-indigo/10 flex items-center justify-center text-xl">
             📖
@@ -59,7 +59,7 @@ export default function AttentionStory() {
 
           <div className="pt-4 border-t border-border-subtle">
             <p className="text-xs text-text-muted italic">
-              Scroll down in the playground on the right to see the attention weights for your own sentences.
+              Switch to the <strong>Playground tab</strong> above to see the attention weights for your own sentences.
             </p>
           </div>
         </div>
@@ -67,3 +67,5 @@ export default function AttentionStory() {
     </div>
   );
 }
+
+export default AttentionStory;

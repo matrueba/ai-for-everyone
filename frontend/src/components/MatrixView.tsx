@@ -1,39 +1,48 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+
+interface MatrixData {
+  left_text: string[];
+  queries: number[][][][]; // [layer][head][token][d_k]
+  keys: number[][][][];    // [layer][head][token][d_k]
+}
+
+interface MatrixViewProps {
+  data: MatrixData | null;
+  layer: number;
+  head: number;
+}
 
 /**
  * MatrixView — visualizes Query (Q), Key (K), and Q×K Matrix
  * for a given layer / head / selected token.
- * 
- * Data shape (from backend):
- *   queries[layer][head][token][d_k]  — query vector per token
- *   keys[layer][head][token][d_k]     — key vector per token
  */
-export default function MatrixView({ data, layer, head }) {
-  const qRef = useRef(null);
-  const kRef = useRef(null);
-  const qkRef = useRef(null);
-  const [selectedToken, setSelectedToken] = useState(null);
-  const [matrixTab, setMatrixTab] = useState("vectors"); // "vectors" | "product"
+const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
+  const qRef = useRef<HTMLDivElement>(null);
+  const kRef = useRef<HTMLDivElement>(null);
+  const qkRef = useRef<HTMLDivElement>(null);
+  const [selectedToken, setSelectedToken] = useState<number | null>(null);
+  const [matrixTab, setMatrixTab] = useState<string>("vectors"); // "vectors" | "product"
 
   const tokens = data?.left_text || [];
   const queries = data?.queries?.[layer]?.[head]; // [nTokens][d_k]
   const keys = data?.keys?.[layer]?.[head];       // [nTokens][d_k]
 
-  // Compute Q×K^T product matrix: [nTokens x nTokens]
-  const qkMatrix = queries && keys ? computeQK(queries, keys) : null;
-
-  function computeQK(Q, K) {
+  function computeQK(Q: number[][], K: number[][]) {
     const n = Q.length;
     const dk = Q[0]?.length || 1;
     const scale = Math.sqrt(dk);
-    const result = [];
+    const result: number[][] = [];
     for (let i = 0; i < n; i++) {
-      const row = [];
+      const row: number[] = [];
+      const qi = Q[i];
       for (let j = 0; j < n; j++) {
         let dot = 0;
-        for (let d = 0; d < dk; d++) {
-          dot += Q[i][d] * K[j][d];
+        const kj = K[j];
+        if (qi && kj) {
+          for (let d = 0; d < dk; d++) {
+            dot += (qi[d] ?? 0) * (kj[d] ?? 0);
+          }
         }
         row.push(dot / scale);
       }
@@ -41,6 +50,9 @@ export default function MatrixView({ data, layer, head }) {
     }
     return result;
   }
+
+  // Compute Q×K^T product matrix: [nTokens x nTokens]
+  const qkMatrix = queries && keys ? computeQK(queries, keys) : null;
 
   // ── Render Q matrix ──
   useEffect(() => {
@@ -60,12 +72,12 @@ export default function MatrixView({ data, layer, head }) {
     renderProductMatrix(qkRef.current, qkMatrix, tokens, selectedToken);
   }, [qkMatrix, tokens, selectedToken]);
 
-  function renderVectorMatrix(el, vectors, labels, title, accentColor) {
+  function renderVectorMatrix(el: HTMLDivElement, vectors: number[][], labels: string[], title: string, accentColor: string) {
     el.innerHTML = "";
     if (!vectors || vectors.length === 0) return;
 
     const nTokens = vectors.length;
-    const dK = vectors[0].length;
+    const dK = vectors[0]?.length ?? 0;
 
     // For readability, cap displayed dimensions
     const maxDims = Math.min(dK, 64);
@@ -94,13 +106,12 @@ export default function MatrixView({ data, layer, head }) {
 
     // Find global min/max for color scale
     const flat = vectors.flatMap(v => v.slice(0, maxDims));
-    const ext = d3.extent(flat);
+    const ext = d3.extent(flat) as [number, number];
     const maxAbs = Math.max(Math.abs(ext[0]), Math.abs(ext[1])) || 1;
 
     // Diverging color scale
-    const colorScale = d3.scaleDiverging()
-      .domain([-maxAbs, 0, maxAbs])
-      .interpolator(d3.interpolateRdBu);
+    const colorScale = d3.scaleDiverging<string>(d3.interpolateRdBu)
+      .domain([-maxAbs, 0, maxAbs]);
 
     // Cells
     vectors.forEach((vec, i) => {
@@ -111,7 +122,7 @@ export default function MatrixView({ data, layer, head }) {
           .attr("width", cellW - 1)
           .attr("height", cellH - 2)
           .attr("rx", 1)
-          .attr("fill", colorScale(val))
+          .attr("fill", colorScale(val) as string)
           .style("opacity", 0.85);
       });
     });
@@ -129,7 +140,7 @@ export default function MatrixView({ data, layer, head }) {
     });
   }
 
-  function renderProductMatrix(el, matrix, labels, highlightRow) {
+  function renderProductMatrix(el: HTMLDivElement, matrix: number[][], labels: string[], highlightRow: number | null) {
     el.innerHTML = "";
     if (!matrix || matrix.length === 0) return;
 
@@ -157,11 +168,10 @@ export default function MatrixView({ data, layer, head }) {
       .attr("fill", "#7c3aed");
 
     const flat = matrix.flat();
-    const ext = d3.extent(flat);
+    const ext = d3.extent(flat) as [number, number];
     const maxAbs = Math.max(Math.abs(ext[0]), Math.abs(ext[1])) || 1;
-    const colorScale = d3.scaleDiverging()
-      .domain([-maxAbs, 0, maxAbs])
-      .interpolator(d3.interpolatePuOr);
+    const colorScale = d3.scaleDiverging<string>(d3.interpolatePuOr)
+      .domain([-maxAbs, 0, maxAbs]);
 
     // Tooltip
     const tooltip = d3.select(el)
@@ -188,12 +198,12 @@ export default function MatrixView({ data, layer, head }) {
           .attr("width", cellSize - 1)
           .attr("height", cellSize - 1)
           .attr("rx", 3)
-          .attr("fill", colorScale(val))
+          .attr("fill", colorScale(val) as string)
           .attr("stroke", highlightRow === i ? "#7c3aed" : "transparent")
           .attr("stroke-width", highlightRow === i ? 2 : 0)
           .style("cursor", "crosshair")
           .style("transition", "stroke 0.1s")
-          .on("mouseenter", function (event) {
+          .on("mouseenter", function (this: SVGRectElement, event: MouseEvent) {
             d3.select(this).attr("stroke", "#0f172a");
             tooltip
               .style("opacity", 1)
@@ -203,12 +213,12 @@ export default function MatrixView({ data, layer, head }) {
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
           })
-          .on("mousemove", function (event) {
+          .on("mousemove", function (event: MouseEvent) {
             tooltip
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
           })
-          .on("mouseleave", function () {
+          .on("mouseleave", function (this: SVGRectElement) {
             d3.select(this).attr("stroke", highlightRow === i ? "#7c3aed" : "transparent");
             tooltip.style("opacity", 0);
           })
@@ -296,3 +306,5 @@ export default function MatrixView({ data, layer, head }) {
     </div>
   );
 }
+
+export default MatrixView;

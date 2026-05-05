@@ -1,11 +1,18 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const RegressionPlot = ({ data, currentStep }) => {
-    const svgRef = useRef();
+import type { PlotData, Step } from './types';
+
+interface RegressionPlotProps {
+    data: PlotData | null | undefined;
+    currentStep: Step | null | undefined;
+}
+
+const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) => {
+    const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
-        if (!data || !currentStep) return;
+        if (!data || !currentStep || !currentStep.predictions || !data.x || !data.y) return;
 
         const margin = { top: 20, right: 20, bottom: 40, left: 40 };
         const width = 500 - margin.left - margin.right;
@@ -17,12 +24,15 @@ const RegressionPlot = ({ data, currentStep }) => {
         const g = svg.append("g")
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
+        const xExtent = d3.extent(data.x) as [number, number];
         const x = d3.scaleLinear()
-            .domain(d3.extent(data.x))
+            .domain(xExtent)
             .range([0, width]);
 
+        const yMin = d3.min(data.y) ?? 0;
+        const yMax = d3.max(data.y) ?? 0;
         const y = d3.scaleLinear()
-            .domain([d3.min(data.y) - 2, d3.max(data.y) + 2])
+            .domain([yMin - 2, yMax + 2])
             .range([height, 0]);
 
         // Axes
@@ -35,7 +45,7 @@ const RegressionPlot = ({ data, currentStep }) => {
 
         // Data points
         g.selectAll("circle")
-            .data(data.x.map((val, i) => ({ x: val, y: data.y[i] })))
+            .data(data.x.map((val, i) => ({ x: val, y: data.y ? (data.y[i] ?? 0) : 0 })))
             .enter()
             .append("circle")
             .attr("cx", d => x(d.x))
@@ -45,8 +55,8 @@ const RegressionPlot = ({ data, currentStep }) => {
             .attr("opacity", 0.6);
 
         // Regression line
-        const lineData = data.x.map((val, i) => ({ x: val, y: currentStep.predictions[i] }));
-        const line = d3.line()
+        const lineData = data.x.map((val, i) => ({ x: val, y: currentStep.predictions ? (currentStep.predictions[i] ?? 0) : 0 }));
+        const line = d3.line<{ x: number, y: number }>()
             .x(d => x(d.x))
             .y(d => y(d.y));
 
@@ -62,23 +72,26 @@ const RegressionPlot = ({ data, currentStep }) => {
             .attr("x", width / 2)
             .attr("y", height + 35)
             .attr("text-anchor", "middle")
-            .text("Feature (X)");
+            .text("Característica (X)");
 
         g.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", -30)
             .attr("x", -height / 2)
             .attr("text-anchor", "middle")
-            .text("Target (y)");
+            .text("Objetivo (y)");
 
     }, [data, currentStep]);
 
     return (
-        <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100">
-            <h3 className="text-lg font-semibold mb-4 text-slate-800">Model Adjustment</h3>
-            <svg ref={svgRef} width="500" height="400"></svg>
-            <div className="mt-2 text-sm text-slate-500">
-                Iteration: {currentStep?.iteration} | Cost: {currentStep?.cost.toFixed(4)}
+        <div className="bg-white p-4 rounded-2xl  border border-slate-100 flex flex-col h-full min-h-0">
+            <h3 className="text-lg font-bold text-slate-800 mb-3 shrink-0">Ajuste del Modelo</h3>
+            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-4 min-h-0">
+                <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[500px]"></svg>
+            </div>
+            <div className="mt-2 flex items-center gap-3 text-sm font-medium text-slate-600 shrink-0">
+                <div className="w-2 h-2 rounded-full animate-pulse bg-indigo-500"></div>
+                Iteración: {currentStep?.iteration} | Coste: {currentStep?.cost.toFixed(4)}
             </div>
         </div>
     );

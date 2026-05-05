@@ -1,10 +1,16 @@
 import React from "react";
 
-const Sidebar = ({ activePage, setActivePage }) => {
+interface SidebarProps {
+  activePage: string;
+  setActivePage: (page: string) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   const menuItems = [
     { id: "home", label: "Home" },
+    { id: "gradient-descent", label: "Gradient Descent" },
+    { id: "inference", label: "Inferencia" },
     { id: "visualizer", label: "Attention Visualizer" },
-    { id: "backpropagation", label: "Backpropagation" },
   ];
 
   return (
@@ -26,9 +32,6 @@ const Sidebar = ({ activePage, setActivePage }) => {
                 : "text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
                 }`}
             >
-              <span className={`text-lg transition-transform duration-200 ${activePage === item.id ? "scale-110" : "group-hover:scale-110 opacity-70 group-hover:opacity-100"}`}>
-                {item.icon}
-              </span>
               {item.label}
               {activePage === item.id && (
                 <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-indigo shadow-[0_0_8px_rgba(79,70,229,0.6)]" />

@@ -1,11 +1,12 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import Home from "./pages/Home";
 import Visualizer from "./pages/Visualizer";
-import Backpropagation from "./pages/Backpropagation";
+import GradientDescent from "./pages/GradientDescent";
+import Inference from "./pages/Inference";
 
-function App() {
-  const [activePage, setActivePage] = useState("home");
+function App(): React.JSX.Element {
+  const [activePage, setActivePage] = useState<string>("home");
 
   return (
     <div className="flex h-screen bg-surface-primary text-text-primary overflow-hidden font-sans">
@@ -20,11 +21,12 @@ function App() {
       <div className="flex-1 flex flex-col min-w-0 relative z-10">
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4">
-          <div className="mx-auto">
+        <main className="flex-1 min-h-0 overflow-hidden">
+          <div className="mx-auto h-full">
             {activePage === "home" && <Home />}
             {activePage === "visualizer" && <Visualizer />}
-            {activePage === "backpropagation" && <Backpropagation />}
+            {activePage === "gradient-descent" && <GradientDescent />}
+            {activePage === "inference" && <Inference />}
           </div>
         </main>
 

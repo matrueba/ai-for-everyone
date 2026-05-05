@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { fetchAttention, fetchModelInfo } from "../api";
+import type { AttentionResponse, ModelInfoResponse } from "../api";
 import AttentionLines from "./AttentionLines";
 import AttentionHeatmap from "./AttentionHeatmap";
 import MatrixView from "./MatrixView";
 
-export default function AttentionPlayground() {
-  const [sentence, setSentence] = useState(
+const AttentionPlayground: React.FC = () => {
+  const [sentence, setSentence] = useState<string>(
     "At the store, she bought apples, oranges, bananas,"
   );
-  const [attentionData, setAttentionData] = useState(null);
-  const [modelInfo, setModelInfo] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [layer, setLayer] = useState(0);
-  const [head, setHead] = useState(0);
-  const [viewMode, setViewMode] = useState("lines"); // "lines" | "heatmap" | "matrix"
+  const [attentionData, setAttentionData] = useState<any | null>(null);
+  const [modelInfo, setModelInfo] = useState<any | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [layer, setLayer] = useState<number>(0);
+  const [head, setHead] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<string>("lines"); // "lines" | "heatmap" | "matrix"
 
   // Load model info on mount
   useEffect(() => {
@@ -32,14 +33,14 @@ export default function AttentionPlayground() {
       setAttentionData(data);
       setLayer(0);
       setHead(0);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") handleAnalyze();
   };
 
@@ -48,7 +49,7 @@ export default function AttentionPlayground() {
   const nHeads = filterData?.attn?.[0]?.length || 0;
 
   return (
-    <div className="flex flex-col min-w-0 max-w-4xl lg:mr-auto w-full">
+    <div className="flex flex-col min-w-0 max-w-5xl mx-auto w-full">
       {/* Input panel */}
       <div className="bg-surface-card border border-border-default rounded-2xl p-6 mb-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-4">
@@ -179,7 +180,7 @@ export default function AttentionPlayground() {
                     {label}
                   </span>
                   <span className="text-accent-cyan font-semibold">
-                    {value}
+                    {value as string}
                   </span>
                 </span>
               ))}
@@ -264,7 +265,7 @@ export default function AttentionPlayground() {
               </span>
             </div>
             <div className="p-6 flex flex-wrap gap-2">
-              {filterData.left_text.map((tok, i) => (
+              {filterData.left_text.map((tok: string, i: number) => (
                 <span
                   key={i}
                   className="inline-flex items-center gap-1 bg-surface-elevated border border-border-subtle rounded-md px-3 py-1.5 text-xs font-mono"
@@ -282,3 +283,5 @@ export default function AttentionPlayground() {
     </div>
   );
 }
+
+export default AttentionPlayground;

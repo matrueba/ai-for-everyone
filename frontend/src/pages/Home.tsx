@@ -1,6 +1,6 @@
 import React from "react";
 
-const Home = () => {
+const Home: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-fade-in-up">
       <div className="text-center mb-16">
@@ -18,9 +18,6 @@ const Home = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
         <div className="bg-surface-card border border-border-default rounded-2xl p-8 shadow-sm transition-all hover:shadow-md hover:border-accent-indigo/30 group">
-          <div className="w-12 h-12 rounded-xl bg-accent-indigo/10 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
-            👁️
-          </div>
           <h3 className="text-xl font-bold mb-4 text-text-primary">Attention Flow</h3>
           <p className="text-sm text-text-secondary leading-relaxed">
             Visualize how tokens "attend" to each other across different layers and heads.
@@ -29,9 +26,6 @@ const Home = () => {
         </div>
 
         <div className="bg-surface-card border border-border-default rounded-2xl p-8 shadow-sm transition-all hover:shadow-md hover:border-accent-cyan/30 group">
-          <div className="w-12 h-12 rounded-xl bg-accent-cyan/10 flex items-center justify-center text-2xl mb-6 group-hover:scale-110 transition-transform">
-            📊
-          </div>
           <h3 className="text-xl font-bold mb-4 text-text-primary">Matrix Deep-Dive</h3>
           <p className="text-sm text-text-secondary leading-relaxed">
             Inspect the Query and Key vectors that drive the attention mechanism.
