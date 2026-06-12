@@ -321,44 +321,44 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
     }, [surface, steps, currentIteration, dimension]);
 
     return (
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800">
+                    <h3 className="text-base font-bold text-slate-800">
                         {dimension === '2d' ? 'Reducción del Error (2D)' : dimension === '1d' ? 'Función de Coste (1D)' : 'Reducción del Error (MSE)'}
                     </h3>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-xs text-slate-500">
                         {dimension === '2d' ? 'Camino de optimización sobre w y b' : dimension === '1d' ? 'Minimización de pérdida sobre w' : 'Minimización de pérdida en el tiempo'}
                     </p>
                 </div>
 
-                <div className="flex bg-slate-100 p-1 rounded-lg">
+                <div className="flex bg-slate-100 p-0.5 rounded-lg">
                     <button
                         onClick={() => setDimension('1d')}
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${dimension === '1d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === '1d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         1D
                     </button>
                     <button
                         onClick={() => setDimension('2d')}
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${dimension === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         2D
                     </button>
                     <button
                         onClick={() => setDimension('mse')}
-                        className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${dimension === 'mse' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === 'mse' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                     >
                         MSE
                     </button>
                 </div>
             </div>
 
-            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-4 min-h-0">
+            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-2 min-h-0">
                 <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-w-[500px]"></svg>
             </div>
 
-            <div className="mt-2 flex items-center gap-3 text-sm font-medium text-slate-600 shrink-0">
+            <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
                 <div className={`w-2 h-2 rounded-full animate-pulse ${dimension === '2d' ? 'bg-rose-500' : 'bg-indigo-500'}`}></div>
                 {dimension === '2d' ? 'Buscando el mínimo global...' : `Coste actual: ${steps && steps[currentIteration]?.cost.toFixed(4)}`}
             </div>

@@ -9,9 +9,9 @@ const GradientDescent: React.FC = () => {
     return (
         <div className="h-full bg-slate-50 flex flex-col">
 
-            <header className="flex flex-row items-center gap-6 overflow-hidden shrink-0 px-6 pt-4 pb-2">
+            <header className="flex flex-row items-center gap-6 overflow-hidden shrink-0 p-6">
                 <h1 className="text-[clamp(1.5rem,5vw,3rem)] font-extrabold text-slate-900 tracking-tighter shrink-0">
-                    Gradient Descent
+                    Gradiente Descendente
                 </h1>
                 <div className="h-8 w-px bg-slate-200 shrink-0 hidden md:block"></div>
                 <p className="text-[clamp(0.75rem,1.5vw,1.1rem)] text-slate-400 font-medium italic leading-tight max-w-[50%]">
@@ -27,7 +27,7 @@ const GradientDescent: React.FC = () => {
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                         }`}
                 >
-                    Theory
+                    Teoría
                 </button>
                 <button
                     onClick={() => setActiveTab('linear')}
@@ -36,7 +36,7 @@ const GradientDescent: React.FC = () => {
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                         }`}
                 >
-                    Linear Regression
+                    Regresión Lineal
                 </button>
                 <button
                     onClick={() => setActiveTab('logistic')}
@@ -45,11 +45,11 @@ const GradientDescent: React.FC = () => {
                         : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                         }`}
                 >
-                    Logistic Regression
+                    Regresión Logística
                 </button>
             </div>
 
-            <div className="transition-opacity duration-300 flex-1 min-h-0 flex flex-col px-6 pt-4 pb-2">
+            <div className="transition-opacity duration-300 flex-1 min-h-0 flex flex-col p-4">
                 {activeTab === 'theory' && <TheoryContent />}
                 {activeTab === 'linear' && <LinearRegressionContent />}
                 {activeTab === 'logistic' && <LogisticRegressionContent />}

@@ -45,19 +45,19 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
     }, [x1, x2, w1, w2, b]);
 
     return (
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-lg font-bold text-slate-800">Predicción de Precio de Vivienda</h3>
-                    <p className="text-sm text-slate-500">Plano de regresión sobre m² y ubicación (Datos Normalizados)</p>
+                    <h3 className="text-base font-bold text-slate-800">Predicción de Precio de Vivienda</h3>
+                    <p className="text-xs text-slate-500">Plano de regresión sobre m² y ubicación (Datos Normalizados)</p>
                 </div>
                 <div className="text-right">
-                    <span className="text-sm font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
-                    <span className="text-sm font-medium text-slate-600 block">Cost: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">Cost: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
                 </div>
             </div>
 
-            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0">
+            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0 p-1">
                 <Plot
                     data={[
                         // The actual dataset scatter points
@@ -136,9 +136,9 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
                 />
             </div>
 
-            <div className="mt-2 p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
-                <span className="text-sm font-medium text-slate-600">Función ajustada</span>
-                <span className="text-sm font-mono font-bold text-indigo-600">
+            <div className="mt-1 p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-slate-600">Función ajustada</span>
+                <span className="text-xs font-mono font-bold text-indigo-600">
                     precio = {w1?.toFixed(2)}·m² {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·ubicación {b >= 0 ? '+' : ''} {b?.toFixed(2)}
                 </span>
             </div>

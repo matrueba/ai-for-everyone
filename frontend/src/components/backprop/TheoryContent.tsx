@@ -4,7 +4,7 @@ const TheoryContent: React.FC = () => {
     return (
         <div className="max-w-6xl mx-auto space-y-12 overflow-y-auto custom-scrollbar pb-12 pr-6">
             {/* Introduction Section */}
-            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <section className="card-elevated p-8">
                 <h2 className="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                     <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 text-lg">1</span>
                     Entrenamiento y Optimización
@@ -20,7 +20,7 @@ const TheoryContent: React.FC = () => {
             </section>
 
             {/* Cost Function Section */}
-            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <section className="card-elevated p-8">
                 <h2 className="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                     <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 text-lg">2</span>
                     La Función de Coste
@@ -60,7 +60,7 @@ const TheoryContent: React.FC = () => {
             </section>
 
             {/* Analogy Section */}
-            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <section className="card-elevated p-8">
                 <h2 className="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                     <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 text-lg">3</span>
                     La Analogía del Descenso
@@ -104,7 +104,7 @@ const TheoryContent: React.FC = () => {
             </section>
 
             {/* Math Section */}
-            <section className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <section className="card-elevated p-8">
                 <h2 className="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                     <span className="flex items-center justify-center w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 text-lg">4</span>
                     La Matemática de la Exploración

@@ -38,15 +38,15 @@ const Backprop3D: React.FC<Backprop3DProps> = ({ surface, steps, currentIteratio
     const pathZ = pathSlice.map(s => logTransform(s.cost));
 
     return (
-        <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-3 shrink-0">
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-lg font-bold text-slate-800">Optimización del Espacio de Parámetros</h3>
-                    <p className="text-sm text-slate-500">Descenso del gradiente · escala log(1+coste)</p>
+                    <h3 className="text-base font-bold text-slate-800">Optimización del Espacio de Parámetros</h3>
+                    <p className="text-xs text-slate-500">Descenso del gradiente · escala log(1+coste)</p>
                 </div>
             </div>
 
-            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0">
+            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0 p-1">
                 <Plot
                     data={[
                         {
@@ -156,18 +156,18 @@ const Backprop3D: React.FC<Backprop3DProps> = ({ surface, steps, currentIteratio
                 />
             </div>
 
-            <div className="mt-2 grid grid-cols-3 gap-3 shrink-0">
-                <div className="bg-slate-50 p-2 rounded-lg border border-slate-100">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400 mb-1">W₁ (m²)</span>
-                    <span className="text-lg font-mono font-bold text-slate-700">{currentStep?.w1?.toFixed(4) ?? "0.0000"}</span>
+            <div className="mt-1 grid grid-cols-3 gap-2 shrink-0">
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">W₁ (horas estudio)</span>
+                    <span className="text-sm font-mono font-bold text-slate-700">{currentStep?.w1?.toFixed(4) ?? "0.0000"}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400 mb-1">W₂ (ubicación)</span>
-                    <span className="text-lg font-mono font-bold text-slate-700">{currentStep?.w2?.toFixed(4) ?? "0.0000"}</span>
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">W₂ (nota examen)</span>
+                    <span className="text-sm font-mono font-bold text-slate-700">{currentStep?.w2?.toFixed(4) ?? "0.0000"}</span>
                 </div>
-                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <span className="block text-[10px] uppercase font-bold text-slate-400 mb-1">Coste actual (MSE)</span>
-                    <span className="text-lg font-mono font-bold text-rose-500">{currentStep?.cost?.toFixed(4) ?? "0.0000"}</span>
+                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
+                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">Coste (Log Loss)</span>
+                    <span className="text-sm font-mono font-bold text-rose-500">{currentStep?.cost?.toFixed(4) ?? "0.0000"}</span>
                 </div>
             </div>
         </div>

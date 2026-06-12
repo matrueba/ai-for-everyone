@@ -8,7 +8,7 @@ const Home: React.FC = () => {
           ✨
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6 bg-gradient-to-r from-accent-indigo via-purple-600 to-accent-cyan bg-clip-text text-transparent">
-          AI Explained
+          AI for Everyone
         </h1>
         <p className="text-lg text-text-secondary leading-relaxed max-w-2xl mx-auto">
           An interactive playground through the inner workings of modern AI.

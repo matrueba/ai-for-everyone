@@ -94,16 +94,16 @@ const LogisticRegressionPlot: React.FC<LogisticRegressionPlotProps> = ({ data, c
     }, [data, currentStep]);
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 flex flex-col h-full">
-            <h3 className="text-xl font-bold mb-4 text-slate-800 shrink-0">Model Classification Border</h3>
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <h3 className="text-base font-bold mb-1 text-slate-800 shrink-0">Model Classification Border</h3>
             <div className="flex-1 min-h-0 w-full relative flex items-center justify-center">
                 <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[100%]"></svg>
             </div>
-            <div className="mt-4 text-sm text-slate-500 flex justify-between shrink-0 bg-slate-50 p-3 rounded-lg border border-slate-100">
+            <div className="mt-1 text-xs text-slate-500 flex justify-between shrink-0 bg-slate-50 p-2 rounded-lg border border-slate-100">
                 <span className="font-bold">Iteration: <span className="font-mono text-indigo-600">{currentStep?.iteration}</span></span>
                 <span className="font-bold">Log Loss: <span className="font-mono text-rose-500">{currentStep?.cost.toFixed(4)}</span></span>
             </div>
-            <div className="mt-3 text-sm font-mono text-indigo-600 font-bold text-center bg-indigo-50 p-2 rounded-lg shrink-0">
+            <div className="mt-1 text-xs font-mono text-indigo-600 font-bold text-center bg-indigo-50 p-1.5 rounded-lg shrink-0">
                 P(y=1|x) = σ({currentStep?.w.toFixed(2)}x {currentStep && currentStep.b >= 0 ? '+' : ''} {currentStep?.b.toFixed(2)})
             </div>
         </div>

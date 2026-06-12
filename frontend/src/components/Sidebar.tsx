@@ -8,8 +8,10 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   const menuItems = [
     { id: "home", label: "Home" },
+    { id: "train", label: "Train" },
     { id: "gradient-descent", label: "Gradient Descent" },
     { id: "inference", label: "Inferencia" },
+    { id: "evaluation", label: "Evaluación" },
     { id: "visualizer", label: "Attention Visualizer" },
   ];
 
@@ -18,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
       <div className="p-6">
         <div className="flex items-center gap-3 mb-10">
           <span className="text-sm font-bold tracking-tight bg-gradient-to-r from-accent-indigo to-accent-cyan bg-clip-text text-transparent">
-            AI Explained
+            AI for Everyone
           </span>
         </div>
 

@@ -4,6 +4,8 @@ import Home from "./pages/Home";
 import Visualizer from "./pages/Visualizer";
 import GradientDescent from "./pages/GradientDescent";
 import Inference from "./pages/Inference";
+import Train from "./pages/Train";
+import Evaluation from "./pages/Evaluation";
 
 function App(): React.JSX.Element {
   const [activePage, setActivePage] = useState<string>("home");
@@ -26,14 +28,16 @@ function App(): React.JSX.Element {
             {activePage === "home" && <Home />}
             {activePage === "visualizer" && <Visualizer />}
             {activePage === "gradient-descent" && <GradientDescent />}
+            {activePage === "train" && <Train setActivePage={setActivePage} />}
             {activePage === "inference" && <Inference />}
+            {activePage === "evaluation" && <Evaluation />}
           </div>
         </main>
 
         {/* Footer */}
         <footer className="h-12 border-t border-border-subtle px-8 flex items-center justify-between text-[0.65rem] text-text-tertiary font-mono shrink-0">
           <div className="flex items-center gap-4">
-            <span>&copy; 2026 AI Explained</span>
+            <span>&copy; 2026 AI for Everyone</span>
             <a
               href="https://github.com"
               target="_blank"

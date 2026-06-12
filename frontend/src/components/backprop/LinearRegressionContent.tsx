@@ -132,9 +132,9 @@ const LinearRegressionContent: React.FC = () => {
     const currentStep = activeData?.steps[currentIteration];
 
     return (
-        <div className="flex flex-col min-h-0 overflow-hidden">
+        <div className="flex flex-col min-h-0">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 shrink-0">
-                <div className="flex flex-row items-center gap-6 overflow-hidden">
+                <div className="flex flex-row items-center gap-6 pl-2">
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tighter shrink-0">
                         Linear Regression
                     </h2>
@@ -142,25 +142,25 @@ const LinearRegressionContent: React.FC = () => {
                         Predict continuous values by fitting a straight line or plane.
                     </p>
                 </div>
-                <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                <div className="flex bg-slate-200 p-1 rounded-xl border border-slate-200 gap-2">
                     <button
                         onClick={() => setVizMode('2d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        Example 1 (Linear 2D)
+                        Ejemplo 1 (2D)
                     </button>
                     <button
                         onClick={() => setVizMode('3d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '3d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        House Pricing (Surface 3D)
+                        Precio Vivienda (3D)
                     </button>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-1 min-h-0 overflow-hidden">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-1 min-h-0">
                 <div className="flex flex-col col-span-4 min-h-0">
-                    <div className="bg-white p-5 rounded-3xl border shadow-sm border-slate-100 space-y-4 flex-1 overflow-y-auto custom-scrollbar min-h-0">
+                    <div className="card-elevated p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar min-h-0">
                         <div className="prose prose-slate max-w-none text-slate-600">
                             <h3 className="text-2xl font-bold text-slate-900 mb-6">Fundamentos de la Regresión Lineal</h3>
 
@@ -234,8 +234,8 @@ const LinearRegressionContent: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="xl:col-span-8 flex flex-col min-h-0 space-y-3 overflow-hidden">
-                    <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-2xl border border-slate-100 shrink-0">
+                <div className="xl:col-span-8 flex flex-col min-h-0 space-y-4">
+                    <div className="flex flex-wrap items-center gap-3 card-elevated p-3 shrink-0">
                         <button
                             onClick={() => setIsPlaying(!isPlaying)}
                             className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95 ${isPlaying ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white'}`}
@@ -281,7 +281,7 @@ const LinearRegressionContent: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 flex-1 min-h-0 overflow-hidden">
+                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 flex-1 min-h-0">
                         {vizMode === '2d' ? (
                             <>
                                 <RegressionPlot data={data?.data} currentStep={currentStep} />

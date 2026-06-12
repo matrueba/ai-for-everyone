@@ -37,7 +37,7 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
         const x1Range = linspace(x1Min, x1Max, 30);
         const x2Range = linspace(x2Min, x2Max, 30);
 
-        const zSurface = x2Range.map(x2Val => 
+        const zSurface = x2Range.map(x2Val =>
             x1Range.map(x1Val => {
                 const z = w1 * x1Val + w2 * x2Val + b;
                 const zClipped = Math.max(-50, Math.min(50, z)); // prevent overflow
@@ -49,19 +49,19 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
     }, [x1, x2, w1, w2, b]);
 
     return (
-        <div className="bg-white p-6 rounded-2xl shadow-xl border border-slate-100 transition-all hover:shadow-2xl h-fit">
-            <div className="flex items-center justify-between mb-6">
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-xl font-bold text-slate-800">Superficie Sigmoidea 3D</h3>
-                    <p className="text-sm text-slate-500">Visualizando Frontera de Decisión</p>
+                    <h3 className="text-base font-bold text-slate-800">Predicción de Admisión 3D</h3>
+                    <p className="text-xs text-slate-500">Probabilidad de ser admitido (Sí/No)</p>
                 </div>
                 <div className="text-right">
-                    <span className="text-sm font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
-                    <span className="text-sm font-medium text-slate-600 block">Log Loss: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">Log Loss: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
                 </div>
             </div>
-            
-            <div className="relative overflow-hidden rounded-xl bg-slate-50/50">
+
+            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0 p-1">
                 <Plot
                     data={[
                         // The actual dataset scatter points
@@ -76,7 +76,7 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                                 color: y.map(val => val === 1 ? '#6366f1' : '#ef4444'),
                                 opacity: 0.8
                             },
-                            name: 'Dataset'
+                            name: 'Estudiantes'
                         } as any,
                         // The fitted sigmoid surface
                         {
@@ -92,16 +92,16 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                             showscale: false,
                             opacity: 0.8,
                             contours: {
-                                z: { 
-                                    show: true, 
-                                    usecolormap: true, 
-                                    highlightcolor: "white", 
+                                z: {
+                                    show: true,
+                                    usecolormap: true,
+                                    highlightcolor: "white",
                                     project: { z: true } // project to base
                                 },
                                 x: { show: false },
                                 y: { show: false }
                             },
-                            name: 'Sigmoid Probability',
+                            name: 'Probabilidad (Sigmoide)',
                             hoverinfo: 'none'
                         } as any
                     ]}
@@ -110,20 +110,20 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                         height: 500,
                         margin: { l: 0, r: 0, b: 0, t: 0 },
                         scene: {
-                            xaxis: { 
-                                title: 'Feature 1 (x1)',
+                            xaxis: {
+                                title: 'Horas Estudio (x₁)',
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
-                            yaxis: { 
-                                title: 'Feature 2 (x2)',
+                            yaxis: {
+                                title: 'Examen Ingreso (x₂)',
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
-                            zaxis: { 
-                                title: 'Probability P(y=1)',
+                            zaxis: {
+                                title: 'Prob. Admisión P(y=1)',
                                 range: [-0.1, 1.1],
                                 gridcolor: 'white',
                                 showbackground: true,
@@ -146,11 +146,11 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                     className="w-full"
                 />
             </div>
-            
-            <div className="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                <span className="text-sm font-medium text-slate-600">Model Probability Function</span>
-                <span className="text-sm font-mono font-bold text-indigo-600 whitespace-nowrap overflow-x-auto ml-4">
-                    P(y=1) = σ({w1?.toFixed(2)}·x₁ {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·x₂ {b >= 0 ? '+' : ''} {b?.toFixed(2)})
+
+            <div className="mt-1 p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
+                <span className="text-xs font-medium text-slate-600">Función Probabilidad Admisión</span>
+                <span className="text-xs font-mono font-bold text-indigo-600 whitespace-nowrap overflow-x-auto ml-4">
+                    P(y=1) = σ({w1?.toFixed(2)}·horas {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·nota {b >= 0 ? '+' : ''} {b?.toFixed(2)})
                 </span>
             </div>
         </div>

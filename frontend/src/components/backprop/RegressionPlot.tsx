@@ -84,12 +84,12 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
     }, [data, currentStep]);
 
     return (
-        <div className="bg-white p-4 rounded-2xl  border border-slate-100 flex flex-col h-full min-h-0">
-            <h3 className="text-lg font-bold text-slate-800 mb-3 shrink-0">Ajuste del Modelo</h3>
-            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-4 min-h-0">
+        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
+            <h3 className="text-base font-bold text-slate-800 mb-1 shrink-0">Ajuste del Modelo</h3>
+            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-2 min-h-0">
                 <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[500px]"></svg>
             </div>
-            <div className="mt-2 flex items-center gap-3 text-sm font-medium text-slate-600 shrink-0">
+            <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse bg-indigo-500"></div>
                 Iteración: {currentStep?.iteration} | Coste: {currentStep?.cost.toFixed(4)}
             </div>
