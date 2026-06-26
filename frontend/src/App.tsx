@@ -6,6 +6,7 @@ import GradientDescent from "./pages/GradientDescent";
 import Inference from "./pages/Inference";
 import Train from "./pages/Train";
 import Evaluation from "./pages/Evaluation";
+import History from "./pages/History";
 
 function App(): React.JSX.Element {
   const [activePage, setActivePage] = useState<string>("home");
@@ -26,6 +27,7 @@ function App(): React.JSX.Element {
         <main className="flex-1 min-h-0 overflow-hidden">
           <div className="mx-auto h-full">
             {activePage === "home" && <Home />}
+            {activePage === "history" && <History />}
             {activePage === "visualizer" && <Visualizer />}
             {activePage === "gradient-descent" && <GradientDescent />}
             {activePage === "train" && <Train setActivePage={setActivePage} />}

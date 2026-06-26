@@ -8,6 +8,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
   const menuItems = [
     { id: "home", label: "Home" },
+    { id: "history", label: "Historia de la IA" },
     { id: "train", label: "Train" },
     { id: "gradient-descent", label: "Gradient Descent" },
     { id: "inference", label: "Inferencia" },
