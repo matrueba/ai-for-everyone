@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx vite *)",
+      "Bash(venv/bin/python -c ' *)",
+      "Read(//root/.cache/**)",
+      "Bash(venv/bin/python -c \"import playwright\")",
+      "Bash(npm ls *)",
+      "Bash(google-chrome --headless --disable-gpu --no-sandbox --window-size=1680,1400 --virtual-time-budget=8000 --screenshot=/tmp/claude-0/-root-lllm-explained/3b658585-1088-4523-8cc3-1522e3d995d4/scratchpad/nn-page.png http://localhost:5173)",
+      "Bash(pkill -f \"uvicorn backend.main:app\")",
+      "Bash(pkill -f \"vite --port 5173\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173 --max-time 2)"
+    ]
+  }
+}

@@ -7,6 +7,7 @@ import Inference from "./pages/Inference";
 import Train from "./pages/Train";
 import Evaluation from "./pages/Evaluation";
 import History from "./pages/History";
+import NeuralNetwork from "./pages/NeuralNetwork";
 
 function App(): React.JSX.Element {
   const [activePage, setActivePage] = useState<string>("home");
@@ -32,6 +33,7 @@ function App(): React.JSX.Element {
             {activePage === "gradient-descent" && <GradientDescent />}
             {activePage === "train" && <Train setActivePage={setActivePage} />}
             {activePage === "inference" && <Inference />}
+            {activePage === "neural-network" && <NeuralNetwork />}
             {activePage === "evaluation" && <Evaluation />}
           </div>
         </main>

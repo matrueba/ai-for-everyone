@@ -33,6 +33,25 @@ export async function fetchModelInfo(): Promise<ModelInfoResponse> {
   return res.json();
 }
 
+export interface NNPlaygroundResponse {
+  architecture: number[];
+  activation_hidden: string;
+  activation_output: string;
+  W1: number[][]; // [2][hidden]
+  b1: number[];   // [hidden]
+  W2: number[];   // [hidden]
+  b2: number;
+  radius: number;
+  accuracy: number;
+  data: { x1: number[]; x2: number[]; label: number[] };
+}
+
+export async function fetchNNPlayground(): Promise<NNPlaygroundResponse> {
+  const res = await fetch(`${API_BASE}/api/nn-playground`);
+  if (!res.ok) throw new Error("Failed to fetch neural network playground");
+  return res.json();
+}
+
 export async function fetchAttention(sentenceA: string, sentenceB: string | null = null): Promise<AttentionResponse> {
   const body: { sentence_a: string; sentence_b?: string } = { sentence_a: sentenceA };
   if (sentenceB) body.sentence_b = sentenceB;

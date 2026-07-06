@@ -12,6 +12,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
     { id: "train", label: "Train" },
     { id: "gradient-descent", label: "Gradient Descent" },
     { id: "inference", label: "Inferencia" },
+    { id: "neural-network", label: "Neuronas en Acción" },
     { id: "evaluation", label: "Evaluación" },
     { id: "visualizer", label: "Attention Visualizer" },
   ];

@@ -10,10 +10,11 @@ from transformers import AutoTokenizer
 import numpy as np
 
 from backend.api.backprop import (
-    generate_adam_steps, 
+    generate_adam_steps,
     generate_adam_3d,
     run_gradient_descent_matrix
 )
+from backend.api.neural_net import train_playground_network
 
 class APIHandler:
 
@@ -42,6 +43,7 @@ class APIHandler:
         self.app.post("/api/logistic-regression-matrix")(self.run_logistic_regression_matrix_handler)
         self.app.post("/api/predict")(self.predict)
         self.app.get("/api/inference-scenario")(self.get_inference_scenario)
+        self.app.get("/api/nn-playground")(self.get_nn_playground)
 
     def load_model(self):
         # Config path is in backend/config/transformer.json
@@ -64,6 +66,9 @@ class APIHandler:
                 self.trained_linear_models = json.load(f)
         else:
             self.trained_linear_models = {}
+
+        # Train the tiny MLP for the neuron-activation playground (deterministic seed, <1s)
+        self.nn_playground = train_playground_network()
 
     def health(self):
         return {"status": "ok", "model_loaded": self.model is not None, "trained_models_loaded": bool(self.trained_linear_models)}
@@ -142,6 +147,9 @@ class APIHandler:
             return {"prediction": float(prediction)}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
+
+    def get_nn_playground(self):
+        return self.nn_playground
 
     def get_inference_scenario(self, scenario: str = "generic"):
         try:
