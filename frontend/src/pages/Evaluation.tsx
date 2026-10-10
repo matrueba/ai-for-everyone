@@ -1,18 +1,21 @@
 import React from "react";
+import { useT } from "../i18n";
 
 const Evaluation: React.FC = () => {
+  const t = useT("evaluation");
+
   return (
     <div className="flex flex-col gap-8 animate-fade-in-up w-full max-w-6xl mx-auto py-8 px-6 h-full overflow-y-auto">
       {/* Header */}
       <div className="flex flex-col items-center gap-4 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-indigo/10 border border-accent-indigo/20 text-accent-indigo text-xs font-semibold uppercase tracking-wider">
-          Fase 4
+          {t.badge}
         </div>
         <h1 className="text-3xl font-extrabold text-text-primary tracking-tight sm:text-4xl">
-          Evaluación
+          {t.title}
         </h1>
         <p className="text-text-secondary text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-          Explora la evaluación del modelo mediante métricas interactivas y visualizaciones de pérdida en tiempo real.
+          {t.subtitle}
         </p>
       </div>
 
@@ -27,20 +30,20 @@ const Evaluation: React.FC = () => {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-accent-indigo to-accent-cyan text-white flex items-center justify-center text-3xl shadow-md">
               🧪
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-text-primary">
-                Sección en Construcción
+                {t.placeholder.title}
               </h3>
               <p className="text-sm text-text-secondary max-w-md mx-auto leading-relaxed">
-                Estamos preparando la experiencia interactiva de evaluación. Aquí verás cómo se calculan las métricas y la pérdida del modelo sobre datos de prueba.
+                {t.placeholder.body}
               </p>
             </div>
 
             <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
               <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-surface-elevated text-xs font-mono text-text-secondary border border-border-subtle">
                 <span className="w-2 h-2 rounded-full bg-accent-indigo animate-pulse" />
-                Esperando guion
+                {t.placeholder.chip}
               </span>
             </div>
           </div>

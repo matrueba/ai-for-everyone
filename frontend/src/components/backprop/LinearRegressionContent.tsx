@@ -3,6 +3,7 @@ import RegressionPlot from './RegressionPlot';
 import CostSurface from './CostSurface';
 import Backprop3D from './Backprop3D';
 import RegressionPlot3D from './RegressionPlot3D';
+import { useT } from '../../i18n';
 
 import type { Step, SurfaceData } from './types';
 
@@ -52,6 +53,9 @@ const gradient_descent_data = (vizMode: '2d' | '3d') => {
 }
 
 const LinearRegressionContent: React.FC = () => {
+    const gradient = useT('gradient');
+    const t = gradient.linear;
+    const controls = gradient.controls;
     const [data, setData] = useState<FormattedData | null>(null);
     const [data3d, setData3d] = useState<FormattedData | null>(null);
     const [vizMode, setVizMode] = useState<'2d' | '3d'>('2d');
@@ -124,7 +128,7 @@ const LinearRegressionContent: React.FC = () => {
     if (loading && !data && !data3d) return (
         <div className="flex flex-col items-center justify-center p-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading linear regression...</p>
+            <p className="text-slate-600 font-medium">{t.loading}</p>
         </div>
     );
 
@@ -136,10 +140,10 @@ const LinearRegressionContent: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 shrink-0">
                 <div className="flex flex-row items-center gap-6 pl-2">
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tighter shrink-0">
-                        Linear Regression
+                        {t.title}
                     </h2>
                     <p className="text-slate-500 font-medium italic leading-tight">
-                        Predict continuous values by fitting a straight line or plane.
+                        {t.subtitle}
                     </p>
                 </div>
                 <div className="flex bg-slate-200 p-1 rounded-xl border border-slate-200 gap-2">
@@ -147,13 +151,13 @@ const LinearRegressionContent: React.FC = () => {
                         onClick={() => setVizMode('2d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        Ejemplo 1 (2D)
+                        {t.mode2d}
                     </button>
                     <button
                         onClick={() => setVizMode('3d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '3d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        Precio Vivienda (3D)
+                        {t.mode3d}
                     </button>
                 </div>
             </div>
@@ -162,34 +166,28 @@ const LinearRegressionContent: React.FC = () => {
                 <div className="flex flex-col col-span-4 min-h-0">
                     <div className="card-elevated p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar min-h-0">
                         <div className="prose prose-slate max-w-none text-slate-600">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-6">Fundamentos de la Regresión Lineal</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.heading}</h3>
 
-                            <p>
-                                Cuando nos enfrentamos a un problema donde el objetivo es predecir un <strong>valor numérico continuo</strong> (como un precio, un salario o una distancia), el modelo más sencillo es la Regresión Lineal.
-                            </p>
+                            <p>{t.p1}</p>
 
                             <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 my-8">
                                 <h4 className="text-indigo-900 font-bold mb-3 flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    Escenario de Ejemplo: Predicción de Vivienda
+                                    {t.scenario.title}
                                 </h4>
                                 <p className="text-sm text-indigo-800 leading-relaxed">
-                                    Queremos predecir el valor (<strong>y</strong>) de una vivienda basándonos en dos características principales:
+                                    {t.scenario.lead}
                                 </p>
                                 <ul className="text-sm text-indigo-800 mt-2 list-disc ml-5 space-y-1">
-                                    <li>El tamaño en metros cuadrados (<strong>X₁</strong>).</li>
-                                    <li>Una nota del 1 al 10 que evalúa su localización (<strong>X₂</strong>).</li>
+                                    <li>{t.scenario.bullets[1]}</li>
+                                    <li>{t.scenario.bullets[2]}</li>
                                 </ul>
                             </div>
 
-                            <p>
-                                Para que la IA aprenda, partimos de un conjunto de datos que contiene múltiples ejemplos de viviendas donde ya conocemos tanto sus características como su precio real. El algoritmo de <strong>Descenso del Gradiente</strong> descubrirá los patrones entre estos datos.
-                            </p>
+                            <p>{t.p2}</p>
 
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">El Modelo Matemático</h4>
-                            <p>
-                                Al ser una regresión lineal, la función que define nuestro modelo es una ecuación lineal con la siguiente estructura:
-                            </p>
+                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.modelHeading}</h4>
+                            <p>{t.modelLead}</p>
 
                             <div className="bg-slate-900 p-8 rounded-2xl text-center shadow-inner my-6">
                                 <code className="text-2xl text-indigo-300 font-mono">
@@ -198,35 +196,25 @@ const LinearRegressionContent: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">y:</span> Predicción del modelo (precio estimado).
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">X₁ / X₂:</span> Variables de entrada (m² y nota).
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">W₁ / W₂:</span> Parámetros o importancia de cada característica.
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">b:</span> Parámetro de ajuste base o sesgo (Bias).
-                                </div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.y}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.x}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.w}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.b}</div>
                             </div>
 
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">Optimización en Tiempo Real</h4>
-                            <p>
-                                El objetivo es que el Descenso del Gradiente ajuste automáticamente los valores de <strong>W</strong> y <strong>b</strong> hasta encontrar aquellos que minimicen el error. En el Playground interactivo, podrás ver cómo esta función se mueve y se ajusta a los datos.
-                            </p>
+                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.realtimeHeading}</h4>
+                            <p>{t.realtimeBody}</p>
 
                             <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100 mt-8">
-                                <h4 className="text-rose-900 font-bold mb-3">Explora la importancia de la Tasa de Aprendizaje (LR)</h4>
+                                <h4 className="text-rose-900 font-bold mb-3">{t.lrBox.title}</h4>
                                 <div className="space-y-4">
                                     <div>
-                                        <span className="font-bold text-rose-700">Si la tasa es demasiado baja:</span>
-                                        <p className="text-sm text-rose-800">El algoritmo dará pasos minúsculos. Necesitará miles de iteraciones y el entrenamiento será excesivamente lento.</p>
+                                        <span className="font-bold text-rose-700">{t.lrBox.tooLowLabel}</span>
+                                        <p className="text-sm text-rose-800">{t.lrBox.tooLowBody}</p>
                                     </div>
                                     <div>
-                                        <span className="font-bold text-rose-700">Si la tasa es demasiado alta:</span>
-                                        <p className="text-sm text-rose-800">El algoritmo dará pasos erráticos y "rebotará" de un lado a otro, impidiendo que alcance el mínimo global.</p>
+                                        <span className="font-bold text-rose-700">{t.lrBox.tooHighLabel}</span>
+                                        <p className="text-sm text-rose-800">{t.lrBox.tooHighBody}</p>
                                     </div>
                                 </div>
                             </div>
@@ -240,7 +228,7 @@ const LinearRegressionContent: React.FC = () => {
                             onClick={() => setIsPlaying(!isPlaying)}
                             className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95 ${isPlaying ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white'}`}
                         >
-                            {isPlaying ? 'Pause' : 'Start Training'}
+                            {isPlaying ? controls.pause : controls.start}
                         </button>
                         <button
                             onClick={() => {
@@ -249,10 +237,10 @@ const LinearRegressionContent: React.FC = () => {
                             }}
                             className="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
                         >
-                            Reset
+                            {controls.reset}
                         </button>
                         <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
-                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">LR:</span>
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{controls.learningRate}</span>
                             <input
                                 type="number"
                                 step="0.001"
@@ -276,7 +264,7 @@ const LinearRegressionContent: React.FC = () => {
                             <span className="text-xs font-mono font-bold text-slate-400">{(activeData?.steps?.length ?? 1) - 1}</span>
                         </div>
                         <div className="px-4 py-2 bg-indigo-50 rounded-lg">
-                            <span className="text-xs text-indigo-400 uppercase font-bold block">Iteration</span>
+                            <span className="text-xs text-indigo-400 uppercase font-bold block">{controls.iteration}</span>
                             <span className="text-xl font-mono font-bold text-indigo-700">{currentIteration}</span>
                         </div>
                     </div>

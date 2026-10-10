@@ -9,7 +9,11 @@
       "Bash(google-chrome --headless --disable-gpu --no-sandbox --window-size=1680,1400 --virtual-time-budget=8000 --screenshot=/tmp/claude-0/-root-lllm-explained/3b658585-1088-4523-8cc3-1522e3d995d4/scratchpad/nn-page.png http://localhost:5173)",
       "Bash(pkill -f \"uvicorn backend.main:app\")",
       "Bash(pkill -f \"vite --port 5173\")",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173 --max-time 2)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173 --max-time 2)",
+      "Bash(npx tsc *)",
+      "Bash(perl -0pi -e 's/    badge: \"Phase 4\",\\\\n//' src/i18n/locales/en/evaluation.tsx)",
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "Bash(npm run *)"
     ]
   }
 }

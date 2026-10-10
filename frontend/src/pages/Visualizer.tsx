@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import AttentionStory from "../components/AttentionStory";
 import AttentionPlayground from "../components/AttentionPlayground";
+import { useT } from "../i18n";
 
 const Visualizer: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>("theory");
+  const t = useT("visualizer").page;
 
   return (
     <div className="flex flex-col gap-8 animate-fade-in-up w-full max-w-6xl mx-auto py-4">
@@ -11,10 +13,10 @@ const Visualizer: React.FC = () => {
       <div className="flex flex-col items-center gap-6">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-extrabold text-text-primary tracking-tight sm:text-4xl">
-            Attention Visualizer
+            {t.title}
           </h1>
           <p className="text-text-secondary text-sm sm:text-base max-w-lg mx-auto leading-relaxed">
-            Explore the core mechanism of the Transformer architecture through interactive theory and real-time visualization.
+            {t.subtitle}
           </p>
         </div>
 
@@ -27,7 +29,7 @@ const Visualizer: React.FC = () => {
                 : "text-text-tertiary hover:text-text-primary hover:bg-white/50"
             }`}
           >
-            <span className="text-lg">📖</span> Theory
+            <span className="text-lg">📖</span> {t.tabTheory}
           </button>
           <button
             onClick={() => setActiveTab("playground")}
@@ -37,7 +39,7 @@ const Visualizer: React.FC = () => {
                 : "text-text-tertiary hover:text-text-primary hover:bg-white/50"
             }`}
           >
-            <span className="text-lg">⚡</span> Playground
+            <span className="text-lg">⚡</span> {t.tabPlayground}
           </button>
         </div>
       </div>

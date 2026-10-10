@@ -1,6 +1,7 @@
 import React from "react";
 import type { NNPlaygroundResponse } from "../../api";
 import type { ForwardPass, SelectedNeuron } from "./network";
+import { useT } from "../../i18n";
 
 const INDIGO = "#4f46e5";
 const ORANGE = "#ea580c";
@@ -16,6 +17,7 @@ interface NetworkGraphProps {
 }
 
 const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected, onSelect }) => {
+    const t = useT("neuralnet").graph;
     const hiddenSize = net.b1.length;
 
     const WIDTH = 680;
@@ -57,17 +59,17 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                 viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
                 className="w-full h-auto select-none"
                 role="img"
-                aria-label="Grafo de la red neuronal"
+                aria-label={t.ariaLabel}
             >
                 {/* Etiquetas de capas */}
                 <text x={layerX[0]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
-                    Entrada
+                    {t.layers.input}
                 </text>
                 <text x={layerX[1]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
-                    Capa oculta · ReLU
+                    {t.layers.hidden}
                 </text>
                 <text x={layerX[2]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
-                    Salida · Sigmoide
+                    {t.layers.output}
                 </text>
 
                 {/* Conexiones entrada → oculta */}
@@ -204,7 +206,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                                         className="fill-slate-400"
                                         fontStyle="italic"
                                     >
-                                        inactiva
+                                        {t.inactive}
                                     </text>
                                 )}
                             </g>
@@ -251,7 +253,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                             fontWeight={700}
                             fill={fp.outputA >= 0.5 ? INDIGO : ORANGE}
                         >
-                            {fp.outputA >= 0.5 ? "Dentro del círculo" : "Fuera del círculo"}
+                            {fp.outputA >= 0.5 ? t.inside : t.outside}
                         </text>
                     </g>
                 </g>
@@ -261,14 +263,14 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2 text-[0.7rem] text-slate-500">
                 <span className="flex items-center gap-2">
                     <span className="inline-block w-6 h-[3px] rounded" style={{ background: INDIGO }} />
-                    peso positivo
+                    {t.legend.positive}
                 </span>
                 <span className="flex items-center gap-2">
                     <span className="inline-block w-6 h-[3px] rounded" style={{ background: ORANGE }} />
-                    peso negativo
+                    {t.legend.negative}
                 </span>
-                <span>grosor = magnitud del peso · brillo = señal que fluye</span>
-                <span className="italic">haz clic en una neurona para ver su cálculo</span>
+                <span>{t.legend.thickness}</span>
+                <span className="italic">{t.legend.hint}</span>
             </div>
         </div>
     );

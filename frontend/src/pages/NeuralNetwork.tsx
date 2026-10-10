@@ -5,18 +5,14 @@ import { forward } from "../components/nn/network";
 import type { SelectedNeuron } from "../components/nn/network";
 import NetworkGraph from "../components/nn/NetworkGraph";
 import DataCanvas from "../components/nn/DataCanvas";
-
-const STEP_CAPTIONS: Record<number, string> = {
-    1: "1 · Los valores de entrada (x₁, x₂) llegan a las neuronas de la primera capa.",
-    2: "2 · Cada conexión multiplica el valor por su peso w. Las líneas brillantes transportan más señal.",
-    3: "3 · Cada neurona oculta suma sus entradas ponderadas más su sesgo, y aplica ReLU: si la suma es negativa, la neurona no se activa.",
-    4: "4 · Las activaciones de las neuronas encendidas viajan hacia la capa de salida.",
-    5: "5 · La función sigmoide convierte la suma final en una probabilidad entre 0 y 1.",
-};
+import { useT } from "../i18n";
 
 const NeuralNetwork: React.FC = () => {
+    const t = useT("neuralnet");
     const [net, setNet] = useState<NNPlaygroundResponse | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    // Only a flag is stored: the message is read from the dictionary at render
+    // time, so it follows a language switch instead of freezing at fetch time.
+    const [hasError, setHasError] = useState<boolean>(false);
     const [x1, setX1] = useState<number>(1.0);
     const [x2, setX2] = useState<number>(0.8);
     const [animStep, setAnimStep] = useState<number | null>(null);
@@ -26,7 +22,7 @@ const NeuralNetwork: React.FC = () => {
     useEffect(() => {
         fetchNNPlayground()
             .then(setNet)
-            .catch(() => setError("No se pudo conectar con el backend. Arranca el servidor en el puerto 8000."));
+            .catch(() => setHasError(true));
         return () => {
             if (animTimer.current) clearInterval(animTimer.current);
         };
@@ -60,11 +56,11 @@ const NeuralNetwork: React.FC = () => {
             const v = fp.input[selected.index as 0 | 1] ?? 0;
             return (
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-2">Neurona de entrada x{selected.index + 1}</h4>
+                    <h4 className="font-bold text-slate-900 mb-2">{t.inspector.inputTitle(selected.index + 1)}</h4>
                     <p className="text-sm text-slate-600 mb-3">
-                        Las neuronas de entrada no calculan nada: simplemente transmiten el valor de la característica hacia la capa oculta.
+                        {t.inspector.inputBody}
                     </p>
-                    <div className={mono}>valor = {v.toFixed(2)}</div>
+                    <div className={mono}>{t.inspector.inputValue} = {v.toFixed(2)}</div>
                 </div>
             );
         }
@@ -78,12 +74,11 @@ const NeuralNetwork: React.FC = () => {
             const a = fp.hiddenA[j] ?? 0;
             return (
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-2">Neurona oculta #{j + 1}</h4>
+                    <h4 className="font-bold text-slate-900 mb-2">{t.inspector.hiddenTitle(j + 1)}</h4>
                     <p className="text-sm text-slate-600 mb-3">
-                        Primero calcula la <strong>suma ponderada</strong> de sus entradas más el sesgo, y después aplica la
-                        función de activación <strong>ReLU</strong>: <span className="font-mono">max(0, z)</span>.
+                        {t.inspector.hiddenBody}
                         {a === 0 && (
-                            <span className="text-orange-600 font-semibold"> Como z es negativo, esta neurona no se activa (salida 0).</span>
+                            <span className="text-orange-600 font-semibold">{t.inspector.hiddenInactive}</span>
                         )}
                     </p>
                     <div className={mono}>
@@ -98,10 +93,9 @@ const NeuralNetwork: React.FC = () => {
         const terms = net.W2.map((w, j) => `(${w.toFixed(2)})·(${(fp.hiddenA[j] ?? 0).toFixed(2)})`).join(" + ");
         return (
             <div>
-                <h4 className="font-bold text-slate-900 mb-2">Neurona de salida</h4>
+                <h4 className="font-bold text-slate-900 mb-2">{t.inspector.outputTitle}</h4>
                 <p className="text-sm text-slate-600 mb-3">
-                    Suma las activaciones de todas las neuronas ocultas (ponderadas por sus pesos) y aplica la{" "}
-                    <strong>sigmoide</strong> para obtener una probabilidad entre 0 y 1.
+                    {t.inspector.outputBody}
                 </p>
                 <div className={mono}>
                     z = {terms} + ({net.b2.toFixed(2)}) = {fp.outputZ.toFixed(3)}
@@ -117,47 +111,42 @@ const NeuralNetwork: React.FC = () => {
             {/* Header */}
             <header className="flex flex-row items-center gap-6 overflow-hidden shrink-0 p-6">
                 <h1 className="text-[clamp(1.5rem,5vw,3rem)] font-extrabold text-slate-900 tracking-tighter shrink-0">
-                    Neuronas en Acción
+                    {t.header.title}
                 </h1>
                 <div className="h-8 w-px bg-slate-200 shrink-0 hidden md:block"></div>
                 <p className="text-[clamp(0.75rem,1.5vw,1.1rem)] text-slate-400 font-medium italic leading-tight max-w-[50%]">
-                    Observa cómo se activan las neuronas de una red neuronal real mientras hace una inferencia.
+                    {t.header.subtitle}
                 </p>
             </header>
 
-            {error && (
+            {hasError && (
                 <div className="mx-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
-                    {error}
+                    {t.connectionError}
                 </div>
             )}
 
-            {!net && !error && (
+            {!net && !hasError && (
                 <div className="flex-1 flex items-center justify-center text-slate-400 text-sm gap-3">
                     <div className="w-5 h-5 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
-                    Entrenando la red neuronal...
+                    {t.training}
                 </div>
             )}
 
             {net && fp && (
                 <div className="px-6 space-y-6">
-                    {/* Explicación del problema */}
+                    {/* Problem explanation */}
                     <section className="card-elevated p-6">
                         <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">
-                            Esta red neuronal (2 entradas → {net.b1.length} neuronas ocultas → 1 salida) ha sido entrenada para resolver
-                            un problema sencillo: decidir si un punto <span className="font-mono">(x₁, x₂)</span> está{" "}
-                            <strong className="text-indigo-600">dentro</strong> o{" "}
-                            <strong className="text-orange-600">fuera</strong> de un círculo. Un modelo lineal no puede resolverlo,
-                            pero una sola capa oculta sí. <strong>Arrastra el punto</strong> sobre el mapa (o usa los deslizadores) y
-                            observa qué neuronas se encienden y qué señal fluye por cada conexión.
+                            {t.problem(net.b1.length)}
                         </p>
                     </section>
 
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                        {/* Panel de entrada */}
+                        {/* Input panel */}
                         <div className="space-y-6">
                             <section className="card-elevated p-6">
                                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
-                                    Espacio de entrada
+                                    {t.inputSpace}
                                 </h3>
                                 <DataCanvas
                                     net={net}
@@ -192,16 +181,16 @@ const NeuralNetwork: React.FC = () => {
                                 </div>
                             </section>
 
-                            {/* Predicción */}
+                            {/* Prediction */}
                             <section className="card-elevated p-6">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Predicción</h3>
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">{t.prediction.heading}</h3>
                                 <div className="flex items-baseline gap-3">
                                     <span
                                         className={`text-4xl font-extrabold font-mono ${fp.outputA >= 0.5 ? "text-indigo-600" : "text-orange-600"}`}
                                     >
                                         {(fp.outputA * 100).toFixed(1)}%
                                     </span>
-                                    <span className="text-sm text-slate-500">probabilidad de estar dentro</span>
+                                    <span className="text-sm text-slate-500">{t.prediction.probabilityInside}</span>
                                 </div>
                                 <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
                                     <div
@@ -210,31 +199,31 @@ const NeuralNetwork: React.FC = () => {
                                     />
                                 </div>
                                 <p className="mt-3 text-xs text-slate-500">
-                                    Neuronas ocultas activas:{" "}
+                                    {t.prediction.activeNeurons}{" "}
                                     <strong className="text-slate-700 font-mono">
                                         {fp.hiddenA.filter((a) => a > 0).length} / {fp.hiddenA.length}
                                     </strong>
-                                    {" · "}Precisión de la red: <strong className="text-slate-700 font-mono">{(net.accuracy * 100).toFixed(0)}%</strong>
+                                    {" · "}{t.prediction.accuracy} <strong className="text-slate-700 font-mono">{(net.accuracy * 100).toFixed(0)}%</strong>
                                 </p>
                             </section>
                         </div>
 
-                        {/* Grafo de la red */}
+                        {/* Network graph */}
                         <section className="card-elevated p-6 lg:col-span-2">
                             <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">La red por dentro</h3>
+                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">{t.graph.heading}</h3>
                                 <button
                                     onClick={startAnimation}
                                     disabled={animStep !== null}
                                     className="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                                 >
-                                    ▶ Propagar señal paso a paso
+                                    {t.graph.propagate}
                                 </button>
                             </div>
 
                             {animStep !== null && (
                                 <div className="mb-3 p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-800 text-sm font-medium animate-fade-in-up">
-                                    {STEP_CAPTIONS[animStep]}
+                                    {t.steps[animStep as 1 | 2 | 3 | 4 | 5]}
                                 </div>
                             )}
 
@@ -248,36 +237,30 @@ const NeuralNetwork: React.FC = () => {
                         </section>
                     </div>
 
-                    {/* Teoría */}
+                    {/* Theory */}
                     <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="card-elevated p-6">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">⚖️</span> Suma ponderada
+                                <span className="text-xl">⚖️</span> {t.theory.weighted.title}
                             </h4>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                Cada neurona multiplica cada entrada por un <strong>peso</strong> (aprendido durante el
-                                entrenamiento) y suma un <strong>sesgo</strong>. Los pesos positivos (líneas índigo) excitan a la
-                                neurona; los negativos (líneas naranjas) la inhiben.
+                                {t.theory.weighted.body}
                             </p>
                         </div>
                         <div className="card-elevated p-6">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">⚡</span> Activación ReLU
+                                <span className="text-xl">⚡</span> {t.theory.relu.title}
                             </h4>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                La función <span className="font-mono">ReLU(z) = max(0, z)</span> decide si la neurona "se
-                                enciende". Si la suma ponderada es negativa, la neurona queda <strong>inactiva</strong> y no aporta
-                                nada. Esta no-linealidad es lo que permite a la red aprender fronteras curvas como el círculo.
+                                {t.theory.relu.body}
                             </p>
                         </div>
                         <div className="card-elevated p-6">
                             <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">🧩</span> De neuronas a conceptos
+                                <span className="text-xl">🧩</span> {t.theory.concepts.title}
                             </h4>
                             <p className="text-sm text-slate-600 leading-relaxed">
-                                Cada neurona oculta aprende a detectar una "franja" del espacio de entrada. La capa de salida
-                                combina esas detecciones simples para formar la frontera circular. Los LLMs funcionan con el mismo
-                                principio, pero con <strong>miles de millones</strong> de neuronas.
+                                {t.theory.concepts.body}
                             </p>
                         </div>
                     </section>

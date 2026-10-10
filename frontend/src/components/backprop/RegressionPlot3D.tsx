@@ -5,6 +5,8 @@ import createPlotlyComponentModule from 'react-plotly.js/factory';
 const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
 const Plot = createPlotlyComponent(Plotly);
 
+import { useT } from '../../i18n';
+
 import type { PlotData, Step } from './types';
 
 interface RegressionPlot3DProps {
@@ -18,9 +20,12 @@ const linspace = (start: number, stop: number, num: number) => {
 };
 
 const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }) => {
+    const common = useT('common');
+    const t = useT('gradient').plots.regression3d;
+
     if (!data || !currentStep) return (
         <div className="flex items-center justify-center h-full bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-            No data available
+            {common.states.noData}
         </div>
     );
 
@@ -48,12 +53,12 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
         <div className="card-elevated p-3 flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-base font-bold text-slate-800">Predicción de Precio de Vivienda</h3>
-                    <p className="text-xs text-slate-500">Plano de regresión sobre m² y ubicación (Datos Normalizados)</p>
+                    <h3 className="text-base font-bold text-slate-800">{t.title}</h3>
+                    <p className="text-xs text-slate-500">{t.subtitle}</p>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
-                    <span className="text-xs font-medium text-slate-600 block">Cost: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">{t.iteration}: <span className="font-mono text-indigo-600">{iteration}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">{t.cost}: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
                 </div>
             </div>
 
@@ -72,7 +77,7 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
                                 color: '#6366f1',
                                 opacity: 0.8
                             },
-                            name: 'Viviendas (datos de entrenamiento)'
+                            name: t.dataName
                         } as any,
                         // The fitted regression plane
                         {
@@ -91,7 +96,7 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
                                 x: { show: true, color: "white", width: 1 },
                                 y: { show: true, color: "white", width: 1 }
                             },
-                            name: 'Plano de regresión',
+                            name: t.planeName,
                             hoverinfo: 'none'
                         } as any
                     ]}
@@ -100,19 +105,19 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
                         margin: { l: 0, r: 0, b: 0, t: 0 },
                         scene: {
                             xaxis: {
-                                title: { text: 'Tamaño' },
+                                title: { text: t.xLabel },
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
                             yaxis: {
-                                title: { text: 'Ubicación' },
+                                title: { text: t.yLabel },
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
                             zaxis: {
-                                title: { text: 'Precio' },
+                                title: { text: t.zLabel },
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(241, 245, 249)'
@@ -137,9 +142,9 @@ const RegressionPlot3D: React.FC<RegressionPlot3DProps> = ({ data, currentStep }
             </div>
 
             <div className="mt-1 p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-slate-600">Función ajustada</span>
+                <span className="text-xs font-medium text-slate-600">{t.fitted}</span>
                 <span className="text-xs font-mono font-bold text-indigo-600">
-                    precio = {w1?.toFixed(2)}·m² {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·ubicación {b >= 0 ? '+' : ''} {b?.toFixed(2)}
+                    {t.formulaVars.price} = {w1?.toFixed(2)}·{t.formulaVars.area} {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·{t.formulaVars.location} {b >= 0 ? '+' : ''} {b?.toFixed(2)}
                 </span>
             </div>
         </div>

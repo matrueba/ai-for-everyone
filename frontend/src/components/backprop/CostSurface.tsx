@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { useT } from '../../i18n';
 
 import type { SurfaceData, Step } from './types';
 
@@ -10,6 +11,7 @@ interface CostSurfaceProps {
 }
 
 const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIteration }) => {
+    const t = useT('gradient').plots.cost;
     const svgRef = useRef<SVGSVGElement>(null);
     const [dimension, setDimension] = useState<'1d' | '2d' | 'mse'>('2d');
 
@@ -106,7 +108,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Peso (w)");
+                .text(t.axisWeight);
 
             g.append("text")
                 .attr("transform", "rotate(-90)")
@@ -114,7 +116,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Sesgo (b)");
+                .text(t.axisBias);
 
         } else if (dimension === 'mse') {
             // --- MSE Visualization (Cost vs Iteration) ---
@@ -191,7 +193,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Iteración");
+                .text(t.axisIteration);
 
             g.append("text")
                 .attr("transform", "rotate(-90)")
@@ -199,7 +201,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Coste (MSE)");
+                .text(t.axisCostMse);
         } else if (dimension === '1d' && surface && surface.w && surface.b) {
             // --- 1D Visualization (Cost vs W) ---
             const lastStep = steps[steps.length - 1];
@@ -307,7 +309,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Peso (w)");
+                .text(t.axisWeight);
 
             g.append("text")
                 .attr("transform", "rotate(-90)")
@@ -315,20 +317,20 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
                 .attr("class", "text-xs font-bold text-slate-400")
-                .text("Coste J(w)");
+                .text(t.axisCostJ);
         }
 
-    }, [surface, steps, currentIteration, dimension]);
+    }, [surface, steps, currentIteration, dimension, t]);
 
     return (
         <div className="card-elevated p-3 flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
                     <h3 className="text-base font-bold text-slate-800">
-                        {dimension === '2d' ? 'Reducción del Error (2D)' : dimension === '1d' ? 'Función de Coste (1D)' : 'Reducción del Error (MSE)'}
+                        {t.titles[dimension]}
                     </h3>
                     <p className="text-xs text-slate-500">
-                        {dimension === '2d' ? 'Camino de optimización sobre w y b' : dimension === '1d' ? 'Minimización de pérdida sobre w' : 'Minimización de pérdida en el tiempo'}
+                        {t.subtitles[dimension]}
                     </p>
                 </div>
 
@@ -360,7 +362,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
 
             <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
                 <div className={`w-2 h-2 rounded-full animate-pulse ${dimension === '2d' ? 'bg-rose-500' : 'bg-indigo-500'}`}></div>
-                {dimension === '2d' ? 'Buscando el mínimo global...' : `Coste actual: ${steps && steps[currentIteration]?.cost.toFixed(4)}`}
+                {dimension === '2d' ? t.searching : `${t.currentCost} ${steps && steps[currentIteration]?.cost.toFixed(4)}`}
             </div>
         </div>
     );

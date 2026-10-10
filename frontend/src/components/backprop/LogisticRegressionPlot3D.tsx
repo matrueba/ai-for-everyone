@@ -5,6 +5,8 @@ import createPlotlyComponentModule from 'react-plotly.js/factory';
 const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
 const Plot = createPlotlyComponent(Plotly);
 
+import { useT } from '../../i18n';
+
 import type { PlotData, Step } from './types';
 
 interface LogisticRegressionPlot3DProps {
@@ -18,9 +20,12 @@ const linspace = (start: number, stop: number, num: number) => {
 };
 
 const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ data, currentStep }) => {
+    const common = useT('common');
+    const t = useT('gradient').plots.logistic3d;
+
     if (!data || !currentStep) return (
         <div className="flex items-center justify-center h-[500px] bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-            No data available
+            {common.states.noData}
         </div>
     );
 
@@ -52,12 +57,12 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
         <div className="card-elevated p-3 flex flex-col h-full min-h-0">
             <div className="flex items-center justify-between mb-1 shrink-0">
                 <div>
-                    <h3 className="text-base font-bold text-slate-800">Predicción de Admisión 3D</h3>
-                    <p className="text-xs text-slate-500">Probabilidad de ser admitido (Sí/No)</p>
+                    <h3 className="text-base font-bold text-slate-800">{t.title}</h3>
+                    <p className="text-xs text-slate-500">{t.subtitle}</p>
                 </div>
                 <div className="text-right">
-                    <span className="text-xs font-medium text-slate-600 block">Iteration: <span className="font-mono text-indigo-600">{iteration}</span></span>
-                    <span className="text-xs font-medium text-slate-600 block">Log Loss: <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">{t.iteration} <span className="font-mono text-indigo-600">{iteration}</span></span>
+                    <span className="text-xs font-medium text-slate-600 block">{t.logLoss} <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
                 </div>
             </div>
 
@@ -76,7 +81,7 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                                 color: y.map(val => val === 1 ? '#6366f1' : '#ef4444'),
                                 opacity: 0.8
                             },
-                            name: 'Estudiantes'
+                            name: t.studentsName
                         } as any,
                         // The fitted sigmoid surface
                         {
@@ -101,7 +106,7 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                                 x: { show: false },
                                 y: { show: false }
                             },
-                            name: 'Probabilidad (Sigmoide)',
+                            name: t.surfaceName,
                             hoverinfo: 'none'
                         } as any
                     ]}
@@ -111,19 +116,19 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
                         margin: { l: 0, r: 0, b: 0, t: 0 },
                         scene: {
                             xaxis: {
-                                title: 'Horas Estudio (x₁)',
+                                title: t.xLabel,
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
                             yaxis: {
-                                title: 'Examen Ingreso (x₂)',
+                                title: t.yLabel,
                                 gridcolor: 'white',
                                 showbackground: true,
                                 backgroundcolor: 'rgb(248, 250, 252)'
                             },
                             zaxis: {
-                                title: 'Prob. Admisión P(y=1)',
+                                title: t.zLabel,
                                 range: [-0.1, 1.1],
                                 gridcolor: 'white',
                                 showbackground: true,
@@ -148,9 +153,9 @@ const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ dat
             </div>
 
             <div className="mt-1 p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-slate-600">Función Probabilidad Admisión</span>
+                <span className="text-xs font-medium text-slate-600">{t.footerLabel}</span>
                 <span className="text-xs font-mono font-bold text-indigo-600 whitespace-nowrap overflow-x-auto ml-4">
-                    P(y=1) = σ({w1?.toFixed(2)}·horas {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·nota {b >= 0 ? '+' : ''} {b?.toFixed(2)})
+                    P(y=1) = σ({w1?.toFixed(2)}·{t.formulaVars.hours} {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·{t.formulaVars.score} {b >= 0 ? '+' : ''} {b?.toFixed(2)})
                 </span>
             </div>
         </div>

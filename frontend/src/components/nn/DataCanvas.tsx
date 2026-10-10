@@ -1,6 +1,7 @@
 import React, { useMemo, useRef } from "react";
 import type { NNPlaygroundResponse } from "../../api";
 import { forward } from "./network";
+import { useT } from "../../i18n";
 
 const INDIGO = "#4f46e5";
 const ORANGE = "#ea580c";
@@ -19,6 +20,7 @@ interface DataCanvasProps {
 }
 
 const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
+    const t = useT("neuralnet").canvas;
     const svgRef = useRef<SVGSVGElement>(null);
     const dragging = useRef(false);
 
@@ -63,7 +65,7 @@ const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
                 dragging.current = false;
             }}
             role="img"
-            aria-label="Espacio de entrada: arrastra el punto para cambiar x1 y x2"
+            aria-label={t.ariaLabel}
         >
             {/* Región de decisión aprendida por la red */}
             {heatmap.cells.map((c, k) => (

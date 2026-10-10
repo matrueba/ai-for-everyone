@@ -3,6 +3,7 @@ import LogisticRegressionPlot from './LogisticRegressionPlot';
 import CostSurface from './CostSurface';
 import LogisticRegressionPlot3D from './LogisticRegressionPlot3D';
 import Backprop3D from './Backprop3D';
+import { useT } from '../../i18n';
 
 import type { Step, SurfaceData, PlotData } from './types';
 
@@ -33,6 +34,9 @@ const logistic_regression_data = (vizMode: '2d' | '3d') => {
 }
 
 const LogisticRegressionContent: React.FC = () => {
+    const gradient = useT('gradient');
+    const t = gradient.logistic;
+    const controls = gradient.controls;
     const [data, setData] = useState<FormattedData | null>(null);
     const [data3d, setData3d] = useState<FormattedData | null>(null);
     const [vizMode, setVizMode] = useState<'2d' | '3d'>('2d');
@@ -105,7 +109,7 @@ const LogisticRegressionContent: React.FC = () => {
     if (loading && !data && !data3d) return (
         <div className="flex flex-col items-center justify-center p-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-            <p className="text-slate-600 font-medium">Loading logistic regression...</p>
+            <p className="text-slate-600 font-medium">{t.loading}</p>
         </div>
     );
 
@@ -117,10 +121,10 @@ const LogisticRegressionContent: React.FC = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 shrink-0">
                 <div className="flex flex-row items-center gap-6 pl-2">
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tighter shrink-0">
-                        Logistic Regression
+                        {t.title}
                     </h2>
                     <p className="text-slate-500 font-medium italic leading-tight">
-                        Classify data points into categories using the sigmoid function.
+                        {t.subtitle}
                     </p>
                 </div>
                 <div className="flex bg-slate-200 p-1 rounded-xl border border-slate-200 gap-2">
@@ -128,13 +132,13 @@ const LogisticRegressionContent: React.FC = () => {
                         onClick={() => setVizMode('2d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        Ejemplo 1 (2D)
+                        {t.mode2d}
                     </button>
                     <button
                         onClick={() => setVizMode('3d')}
                         className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '3d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        Probabilidad Admisión (3D)
+                        {t.mode3d}
                     </button>
                 </div>
             </div>
@@ -143,41 +147,35 @@ const LogisticRegressionContent: React.FC = () => {
                 <div className="flex flex-col col-span-4 min-h-0">
                     <div className="card-elevated p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar min-h-0">
                         <div className="prose prose-slate max-w-none text-slate-600">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-6">Fundamentos de la Regresión Logística</h3>
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.heading}</h3>
 
-                            <p>
-                                Cuando el objetivo es predecir una <strong>categoría o clase binaria</strong> (como Sí/No, Spam/No Spam o Admitido/Rechazado) en lugar de un número continuo, recurrimos a la Regresión Logística.
-                            </p>
+                            <p>{t.p1}</p>
 
                             <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 my-8">
                                 <h4 className="text-indigo-900 font-bold mb-3 flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    Escenario de Ejemplo: Admisión Universitaria
+                                    {t.scenario.title}
                                 </h4>
                                 <p className="text-sm text-indigo-800 leading-relaxed">
-                                    Queremos predecir la probabilidad de que un estudiante sea admitido (<strong>y = 1</strong> o <strong>0</strong>) basándonos en dos características principales:
+                                    {t.scenario.lead}
                                 </p>
                                 <ul className="text-sm text-indigo-800 mt-2 list-disc ml-5 space-y-1">
-                                    <li>Las horas semanales de estudio (<strong>X₁</strong>).</li>
-                                    <li>La puntuación en el examen de ingreso (<strong>X₂</strong>).</li>
+                                    <li>{t.scenario.bullets[1]}</li>
+                                    <li>{t.scenario.bullets[2]}</li>
                                 </ul>
                             </div>
 
-                            <p>
-                                A diferencia de la regresión lineal, no podemos simplemente trazar una línea recta que se ajuste a los datos. Debemos aplicar funciones no lineales que transformen el resultado, acotándolo entre <strong>0 y 1</strong> (0% y 100%). La función típica usada para este propósito es la función <strong>sigmoide</strong>. Posteriormente, conoceremos otras funciones no lineales utilizadas en problemas de clasificación, como la tangente hiperbólica.
-                            </p>
+                            <p>{t.p2}</p>
 
                             <div className="flex flex-col items-center my-8 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                                <img src="/sigmoid_function.png" alt="Función Sigmoide" className="w-full max-w-md rounded-lg" />
+                                <img src="/sigmoid_function.png" alt={t.sigmoidAlt} className="w-full max-w-md rounded-lg" />
                                 <p className="text-sm text-slate-500 italic mt-4 text-center max-w-[300px]">
-                                    La función sigmoide transforma cualquier valor real en un valor acotado entre 0 y 1.
+                                    {t.sigmoidCaption}
                                 </p>
                             </div>
 
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">El Modelo Matemático</h4>
-                            <p>
-                                La salida del modelo se calcula pasando la combinación lineal de las características a través de la función sigmoide:
-                            </p>
+                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.modelHeading}</h4>
+                            <p>{t.modelLead}</p>
 
                             <div className="bg-slate-900 p-8 rounded-2xl text-center shadow-inner my-6">
                                 <div className="text-2xl text-indigo-300 font-mono mb-2">
@@ -189,35 +187,21 @@ const LogisticRegressionContent: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">y:</span> Probabilidad predicha (entre 0 y 1) de admisión.
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">z:</span> Combinación lineal de las características.
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">X₁ / X₂:</span> Variables de entrada (horas y examen).
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">W₁ / W₂ / b:</span> Pesos y sesgo que determinan la frontera de decisión.
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <span className="font-bold text-slate-800">σ():</span> Función sigmoide.
-                                </div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.y}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.z}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.x}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.w}</div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.sigma}</div>
                             </div>
 
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">La Función Sigmoide y la Frontera</h4>
-                            <p>
-                                La función sigmoide aplasta cualquier valor real en el intervalo (0, 1). Si <strong>y &ge; 0.5</strong>, clasificamos la predicción como clase 1 (Admitido); si es menor, como clase 0. El lugar geométrico donde la probabilidad es exactamente 0.5 (es decir, z = 0) se conoce como la <strong>frontera de decisión</strong>.
-                            </p>
+                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.borderHeading}</h4>
+                            <p>{t.borderBody}</p>
 
                             <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100 mt-8">
-                                <h4 className="text-rose-900 font-bold mb-3">La Función de Pérdida: Entropía Cruzada</h4>
+                                <h4 className="text-rose-900 font-bold mb-3">{t.lossBox.title}</h4>
                                 <div className="space-y-4">
                                     <div>
-                                        <p className="text-sm text-rose-800">
-                                            En regresión logística no usamos el Error Cuadrático Medio, sino la <strong>Entropía Cruzada Binaria (Log Loss)</strong>. Esta función penaliza fuertemente a los errores cometidos con alta confianza. Por ejemplo, predecir una probabilidad de 0.01 cuando la clase real es 1 genera una penalización exponencialmente grande.
-                                        </p>
+                                        <p className="text-sm text-rose-800">{t.lossBox.body}</p>
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +215,7 @@ const LogisticRegressionContent: React.FC = () => {
                             onClick={() => setIsPlaying(!isPlaying)}
                             className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95 ${isPlaying ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white'}`}
                         >
-                            {isPlaying ? 'Pause' : 'Start Training'}
+                            {isPlaying ? controls.pause : controls.start}
                         </button>
                         <button
                             onClick={() => {
@@ -240,10 +224,10 @@ const LogisticRegressionContent: React.FC = () => {
                             }}
                             className="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
                         >
-                            Reset
+                            {controls.reset}
                         </button>
                         <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
-                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">LR:</span>
+                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{controls.learningRate}</span>
                             <input
                                 type="number"
                                 step="0.01"
@@ -267,7 +251,7 @@ const LogisticRegressionContent: React.FC = () => {
                             <span className="text-xs font-mono font-bold text-slate-400">{(activeData?.steps?.length ?? 1) - 1}</span>
                         </div>
                         <div className="px-4 py-2 bg-indigo-50 rounded-lg">
-                            <span className="text-xs text-indigo-400 uppercase font-bold block">Iteration</span>
+                            <span className="text-xs text-indigo-400 uppercase font-bold block">{controls.iteration}</span>
                             <span className="text-xl font-mono font-bold text-indigo-700">{currentIteration}</span>
                         </div>
                     </div>

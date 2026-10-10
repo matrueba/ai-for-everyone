@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Plotly from 'plotly.js-dist-min';
 import createPlotlyComponentModule from 'react-plotly.js/factory';
+import { useI18n, useT } from '../i18n';
+import type { InferenceScenarioId } from '../i18n/content-types';
 
 // Fix for react-plotly.js typing/import issue in some environments
 const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
@@ -15,24 +17,62 @@ interface ModelData {
     dataY: number[];
 }
 
-interface TabConfig {
-    id: string;
-    title: string;
-    description: string;
-    x1Label: string;
-    x2Label: string;
-    yLabel: string;
+/** Numeric setup of a scenario — language independent, so it stays in the component. */
+interface ScenarioRanges {
     x1Range: [number, number];
     x2Range: [number, number];
     defaultX1: number;
     defaultX2: number;
     step1: number;
     step2: number;
+    isClassification?: boolean;
+}
+
+/** Ranges + the active locale's copy + locale-aware formatters. */
+interface TabConfig extends ScenarioRanges {
+    id: InferenceScenarioId;
+    tab: string;
+    title: string;
+    description: string;
+    x1Label: string;
+    x2Label: string;
+    yLabel: string;
     format1: (v: number) => string;
     format2: (v: number) => string;
     formatY: (v: number) => string;
-    isClassification?: boolean;
 }
+
+const SCENARIO_IDS: InferenceScenarioId[] = ['generic', 'houses', 'admission'];
+
+const SCENARIO_RANGES: Record<InferenceScenarioId, ScenarioRanges> = {
+    generic: {
+        x1Range: [-6, 6],
+        x2Range: [-6, 6],
+        defaultX1: 2.0,
+        defaultX2: -1.0,
+        step1: 0.1,
+        step2: 0.1,
+        isClassification: false,
+    },
+    houses: {
+        x1Range: [40, 300],
+        x2Range: [0, 10],
+        defaultX1: 100,
+        defaultX2: 7,
+        step1: 1,
+        step2: 0.1,
+        isClassification: false,
+    },
+    admission: {
+        x1Range: [0, 100],
+        x2Range: [0, 20],
+        defaultX1: 70,
+        defaultX2: 10,
+        step1: 1,
+        step2: 0.5,
+        isClassification: true,
+    },
+};
 
 interface InferencePlot3DProps {
     model: ModelData | null;
@@ -43,6 +83,8 @@ interface InferencePlot3DProps {
 }
 
 const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, inputX2, predY, config }) => {
+    const t = useT('inference').plot;
+
     if (!model) return null;
 
     const { dataX1, dataX2, dataY, w1, w2, b } = model;
@@ -99,14 +141,14 @@ const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, input
                                     : '#cbd5e1',
                                 opacity: config.isClassification ? 0.8 : 0.5
                             },
-                            name: 'Datos'
+                            name: t.dataName
                         },
                         {
                             x: planeData.x, y: planeData.y, z: planeData.z,
                             type: 'surface',
                             colorscale: [[0, 'rgba(99, 102, 241, 0.4)'], [1, 'rgba(14, 165, 233, 0.4)']],
                             showscale: false,
-                            name: 'Modelo',
+                            name: t.modelName,
                             hoverinfo: 'none',
                             contours: {
                                 z: { show: true, usecolormap: true, highlightcolor: "white", project: { z: false } }
@@ -118,7 +160,7 @@ const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, input
                             z: [plotMinZ, predY],
                             type: 'scatter3d', mode: 'lines',
                             line: { color: '#f43f5e', width: 6, dash: 'dash' },
-                            name: 'Proyección'
+                            name: t.projectionName
                         },
                         {
                             x: [inputX1, inputX1],
@@ -131,11 +173,11 @@ const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, input
                                 line: { color: 'white', width: 2 }
                             },
                             text: [
-                                `Entrada (${config.x1Label}=${config.format1(inputX1)}, ${config.x2Label}=${config.format2(inputX2)})`,
-                                `Predicción ${config.yLabel}=${config.formatY(predY)}`
+                                `${t.inputTooltip} (${config.x1Label}=${config.format1(inputX1)}, ${config.x2Label}=${config.format2(inputX2)})`,
+                                `${t.predictionTooltip} ${config.yLabel}=${config.formatY(predY)}`
                             ],
                             hoverinfo: 'text',
-                            name: 'Puntos Clave'
+                            name: t.keyPointsName
                         }
                     ]}
                     layout={{
@@ -167,72 +209,50 @@ const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, input
     );
 };
 
-const TAB_CONFIGS: Record<string, TabConfig> = {
-    generic: {
-        id: 'generic',
-        title: 'Inferencia Genérica',
-        description: 'Mapeamos la entrada en dos dimensiones hacia el plano del modelo.',
-        x1Label: 'Feature 1 (X₁)',
-        x2Label: 'Feature 2 (X₂)',
-        yLabel: 'Target (Y)',
-        x1Range: [-6, 6],
-        x2Range: [-6, 6],
-        defaultX1: 2.0,
-        defaultX2: -1.0,
-        step1: 0.1,
-        step2: 0.1,
-        format1: (v) => v.toFixed(2),
-        format2: (v) => v.toFixed(2),
-        formatY: (v) => v.toFixed(4),
-        isClassification: false
-    },
-    houses: {
-        id: 'houses',
-        title: 'Precio de Viviendas',
-        description: 'Predicción del precio basada en metros cuadrados y puntuación de ubicación.',
-        x1Label: 'Superficie (m²)',
-        x2Label: 'Localización (0-10)',
-        yLabel: 'Precio (€)',
-        x1Range: [40, 300],
-        x2Range: [0, 10],
-        defaultX1: 100,
-        defaultX2: 7,
-        step1: 1,
-        step2: 0.1,
-        format1: (v) => `${v} m²`,
-        format2: (v) => `${v}/10`,
-        formatY: (v) => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(v),
-        isClassification: false
-    },
-    admission: {
-        id: 'admission',
-        title: 'Clasificación de Admisión',
-        description: 'Predice la probabilidad de admisión universitaria basada en la calificación del examen y horas de actividades.',
-        x1Label: 'Calificación Examen',
-        x2Label: 'Actividades (h/semana)',
-        yLabel: 'Prob. Admisión',
-        x1Range: [0, 100],
-        x2Range: [0, 20],
-        defaultX1: 70,
-        defaultX2: 10,
-        step1: 1,
-        step2: 0.5,
-        format1: (v) => `${v.toFixed(0)}/100`,
-        format2: (v) => `${v.toFixed(1)}h`,
-        formatY: (v) => `${(v * 100).toFixed(1)}%`,
-        isClassification: true
-    }
-};
-
 const Inference: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<string>('generic');
+    const t = useT('inference');
+    const { formatNumber } = useI18n();
+    const [activeTab, setActiveTab] = useState<InferenceScenarioId>('generic');
     const [model, setModel] = useState<ModelData | null>(null);
-    const [inputX1, setInputX1] = useState<number>(TAB_CONFIGS.generic?.defaultX1 ?? 0);
-    const [inputX2, setInputX2] = useState<number>(TAB_CONFIGS.generic?.defaultX2 ?? 0);
+    const [inputX1, setInputX1] = useState<number>(SCENARIO_RANGES.generic.defaultX1);
+    const [inputX2, setInputX2] = useState<number>(SCENARIO_RANGES.generic.defaultX2);
     const [predY, setPredY] = useState<number>(0);
     const [loading, setLoading] = useState<boolean>(true);
 
-    const currentConfig = TAB_CONFIGS[activeTab];
+    /** Copy + ranges + formatters, rebuilt whenever the language changes. */
+    const tabConfigs = useMemo<Record<InferenceScenarioId, TabConfig>>(() => {
+        const fixed = (digits: number) => (v: number) =>
+            formatNumber(v, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+
+        return {
+            generic: {
+                id: 'generic',
+                ...t.scenarios.generic,
+                ...SCENARIO_RANGES.generic,
+                format1: fixed(2),
+                format2: fixed(2),
+                formatY: fixed(4),
+            },
+            houses: {
+                id: 'houses',
+                ...t.scenarios.houses,
+                ...SCENARIO_RANGES.houses,
+                format1: (v) => `${fixed(0)(v)} m²`,
+                format2: (v) => `${fixed(1)(v)}/10`,
+                formatY: (v) => formatNumber(v, { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }),
+            },
+            admission: {
+                id: 'admission',
+                ...t.scenarios.admission,
+                ...SCENARIO_RANGES.admission,
+                format1: (v) => `${fixed(0)(v)}/100`,
+                format2: (v) => `${fixed(1)(v)}h`,
+                formatY: (v) => `${fixed(1)(v * 100)}%`,
+            },
+        };
+    }, [t, formatNumber]);
+
+    const currentConfig = tabConfigs[activeTab];
 
     useEffect(() => {
         setLoading(true);
@@ -251,11 +271,9 @@ const Inference: React.FC = () => {
                     dataX2: (data.X ?? []).map((r: number[]) => r[1] ?? 0),
                     dataY: data.y ?? []
                 });
-                const config = TAB_CONFIGS[activeTab];
-                if (config) {
-                    setInputX1(config.defaultX1);
-                    setInputX2(config.defaultX2);
-                }
+                const ranges = SCENARIO_RANGES[activeTab];
+                setInputX1(ranges.defaultX1);
+                setInputX2(ranges.defaultX2);
                 setLoading(false);
             })
             .catch(err => {
@@ -279,7 +297,7 @@ const Inference: React.FC = () => {
             })
                 .then(res => res.json())
                 .then(data => {
-                    const val = currentConfig?.isClassification
+                    const val = currentConfig.isClassification
                         ? 1 / (1 + Math.exp(-data.prediction))
                         : data.prediction;
                     setPredY(val);
@@ -290,28 +308,24 @@ const Inference: React.FC = () => {
         return () => clearTimeout(timer);
     }, [inputX1, inputX2, model, currentConfig]);
 
-    const handleTabChange = (tabId: string) => {
-        setActiveTab(tabId);
-    };
-
     return (
         <div className="h-full bg-slate-50 p-4 md:p-6 flex flex-col gap-4 overflow-hidden">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 shrink-0">
                 <div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 mb-2">Inferencia</h1>
+                    <h1 className="text-4xl font-extrabold text-slate-900 mb-2">{t.title}</h1>
                     <p className="text-slate-600 text-lg max-w-2xl">
-                        Aprende cómo los modelos generan predicciones en tiempo real.
+                        {t.subtitle}
                     </p>
                 </div>
 
                 <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                    {Object.values(TAB_CONFIGS).map(config => (
+                    {SCENARIO_IDS.map(id => (
                         <button
-                            key={config.id}
-                            onClick={() => handleTabChange(config.id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === config.id ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
+                            key={id}
+                            onClick={() => setActiveTab(id)}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
                         >
-                            {config.id === 'generic' ? 'Genérico' : config.id === 'houses' ? 'Casas' : 'Admisión'}
+                            {t.scenarios[id].tab}
                         </button>
                     ))}
                 </div>
@@ -322,8 +336,7 @@ const Inference: React.FC = () => {
                 <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full pointer-events-none"></div>
                 <div>
                     <p className="text-slate-700 leading-relaxed text-sm md:text-base">
-                        Una vez finalizado el entrenamiento el modelo está preparado para ejecutar predicciones con nuevos datos.
-                        A este proceso se le denomina <strong>inferencia</strong>. En el playground puedes visualizar cómo los modelos entrenados usan sus parámetros para generar predicciones en tiempo real en problemas de <strong>regresión</strong> (predicción de valores continuos) y <strong>clasificación</strong> (predicción de categorías).
+                        {t.intro}
                     </p>
                 </div>
             </div>
@@ -337,20 +350,20 @@ const Inference: React.FC = () => {
 
                         <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                             <span className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">🎮</span>
-                            Parámetros
+                            {t.params.heading}
                         </h2>
 
                         <div className="space-y-6">
                             <div>
                                 <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
-                                    <span>{currentConfig?.x1Label}</span>
-                                    <span className="text-violet-600 font-mono">{currentConfig?.format1(inputX1)}</span>
+                                    <span>{currentConfig.x1Label}</span>
+                                    <span className="text-violet-600 font-mono">{currentConfig.format1(inputX1)}</span>
                                 </label>
                                 <input
                                     type="range"
-                                    min={currentConfig?.x1Range[0] || 0}
-                                    max={currentConfig?.x1Range[1] || 100}
-                                    step={currentConfig?.step1 || 1}
+                                    min={currentConfig.x1Range[0]}
+                                    max={currentConfig.x1Range[1]}
+                                    step={currentConfig.step1}
                                     value={inputX1}
                                     onChange={(e) => setInputX1(parseFloat(e.target.value))}
                                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-500"
@@ -358,14 +371,14 @@ const Inference: React.FC = () => {
                             </div>
                             <div>
                                 <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
-                                    <span>{currentConfig?.x2Label}</span>
-                                    <span className="text-sky-600 font-mono">{currentConfig?.format2(inputX2)}</span>
+                                    <span>{currentConfig.x2Label}</span>
+                                    <span className="text-sky-600 font-mono">{currentConfig.format2(inputX2)}</span>
                                 </label>
                                 <input
                                     type="range"
-                                    min={currentConfig?.x2Range[0] || 0}
-                                    max={currentConfig?.x2Range[1] || 100}
-                                    step={currentConfig?.step2 || 1}
+                                    min={currentConfig.x2Range[0]}
+                                    max={currentConfig.x2Range[1]}
+                                    step={currentConfig.step2}
                                     value={inputX2}
                                     onChange={(e) => setInputX2(parseFloat(e.target.value))}
                                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-500"
@@ -379,14 +392,14 @@ const Inference: React.FC = () => {
 
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
                             <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">🧠</span>
-                            Inteligencia
+                            {t.brain.heading}
                         </h2>
 
                         <div className="space-y-4 text-sm">
                             <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                <p className="text-slate-400 mb-1">Ecuación Aprendida</p>
+                                <p className="text-slate-400 mb-1">{t.brain.equation}</p>
                                 <p className="text-lg font-mono text-sky-400">
-                                    {currentConfig?.isClassification ? 'Y = σ(W₁·X₁ + W₂·X₂ + b)' : 'Y = W₁·X₁ + W₂·X₂ + b'}
+                                    {currentConfig.isClassification ? 'Y = σ(W₁·X₁ + W₂·X₂ + b)' : 'Y = W₁·X₁ + W₂·X₂ + b'}
                                 </p>
                             </div>
 
@@ -406,10 +419,10 @@ const Inference: React.FC = () => {
                             </div>
 
                             <div className="mt-4 p-4 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-                                <p className="text-emerald-200 mb-1 text-xs uppercase tracking-wider">Resultado (Inferencia)</p>
+                                <p className="text-emerald-200 mb-1 text-xs uppercase tracking-wider">{t.brain.result}</p>
                                 <div className="flex flex-col gap-1">
                                     <span className="font-mono text-emerald-400 text-2xl font-bold text-center">
-                                        {loading ? '...' : (currentConfig ? currentConfig.formatY(predY) : predY.toFixed(2))}
+                                        {loading ? '...' : currentConfig.formatY(predY)}
                                     </span>
                                 </div>
                             </div>
@@ -422,15 +435,15 @@ const Inference: React.FC = () => {
                     {loading ? (
                         <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-100 shadow-xl">
                             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                            <p className="text-slate-600 font-medium">Entrenando modelo para {currentConfig?.title}...</p>
-                            <p className="text-slate-400 text-xs mt-2">Optimizando pesos via Gradiente Descendente</p>
+                            <p className="text-slate-600 font-medium">{t.loading(currentConfig.title)}</p>
+                            <p className="text-slate-400 text-xs mt-2">{t.loadingHint}</p>
                         </div>
-                    ) : (model && currentConfig) ? (
+                    ) : model ? (
                         <InferencePlot3D model={model} inputX1={inputX1} inputX2={inputX2} predY={predY} config={currentConfig} />
                     ) : (
                         <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-red-100 shadow-xl text-red-500">
-                            <p className="font-bold">Error al entrenar el modelo</p>
-                            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold">Reintentar</button>
+                            <p className="font-bold">{t.error}</p>
+                            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold">{t.retry}</button>
                         </div>
                     )}
                 </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import { useT } from "../i18n";
 
 interface MatrixData {
   left_text: string[];
@@ -18,6 +19,7 @@ interface MatrixViewProps {
  * for a given layer / head / selected token.
  */
 const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
+  const t = useT("visualizer").matrix;
   const qRef = useRef<HTMLDivElement>(null);
   const kRef = useRef<HTMLDivElement>(null);
   const qkRef = useRef<HTMLDivElement>(null);
@@ -58,13 +60,13 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
   useEffect(() => {
     if (!queries || !qRef.current) return;
     renderVectorMatrix(qRef.current, queries, tokens, "Q", "#4f46e5");
-  }, [queries, tokens]);
+  }, [queries, tokens, t]);
 
   // ── Render K matrix ──
   useEffect(() => {
     if (!keys || !kRef.current) return;
     renderVectorMatrix(kRef.current, keys, tokens, "K", "#0891b2");
-  }, [keys, tokens]);
+  }, [keys, tokens, t]);
 
   // ── Render Q×K matrix ──
   useEffect(() => {
@@ -96,7 +98,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
 
     // Title
     svg.append("text")
-      .text(`${title} matrix`)
+      .text(t.matrixTitle(title))
       .attr("x", labelPad + (maxDims * cellW) / 2)
       .attr("y", 18)
       .attr("text-anchor", "middle")
@@ -258,7 +260,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
   if (!queries && !keys) {
     return (
       <div className="text-center py-12 text-text-tertiary text-sm">
-        No query/key data available for this layer and head.
+        {t.noData}
       </div>
     );
   }
@@ -270,13 +272,13 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
           onClick={() => setMatrixTab("vectors")}
           className={`px-4 py-2 text-xs font-medium cursor-pointer transition-colors ${matrixTab === "vectors" ? "bg-accent-indigo/10 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
         >
-          Q & K Vectors
+          {t.tabVectors}
         </button>
         <button
           onClick={() => setMatrixTab("product")}
           className={`px-4 py-2 text-xs font-medium cursor-pointer transition-colors border-l border-border-default ${matrixTab === "product" ? "bg-accent-indigo/10 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
         >
-          Q × Kᵀ Matrix
+          {t.tabProduct}
         </button>
       </div>
 
@@ -298,7 +300,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
           </div>
           {selectedToken !== null && (
             <p className="text-center text-xs text-text-tertiary font-mono">
-              Selected token: <span className="text-accent-indigo font-semibold">{tokens[selectedToken]}</span> (index {selectedToken}) — click another cell to change
+              {t.selectedToken(tokens[selectedToken] ?? "", selectedToken)}
             </p>
           )}
         </div>

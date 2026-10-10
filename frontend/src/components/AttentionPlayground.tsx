@@ -4,11 +4,11 @@ import type { AttentionResponse, ModelInfoResponse } from "../api";
 import AttentionLines from "./AttentionLines";
 import AttentionHeatmap from "./AttentionHeatmap";
 import MatrixView from "./MatrixView";
+import { useT } from "../i18n";
 
 const AttentionPlayground: React.FC = () => {
-  const [sentence, setSentence] = useState<string>(
-    "At the store, she bought apples, oranges, bananas,"
-  );
+  const t = useT("visualizer").playground;
+  const [sentence, setSentence] = useState<string>(t.defaultSentence);
   const [attentionData, setAttentionData] = useState<any | null>(null);
   const [modelInfo, setModelInfo] = useState<any | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -53,7 +53,7 @@ const AttentionPlayground: React.FC = () => {
       {/* Input panel */}
       <div className="bg-surface-card border border-border-default rounded-2xl p-6 mb-7 shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-4">
-          Input Sentence
+          {t.inputLabel}
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <input
@@ -62,7 +62,7 @@ const AttentionPlayground: React.FC = () => {
             value={sentence}
             onChange={(e) => setSentence(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Type a sentence to analyze…"
+            placeholder={t.placeholder}
             className="flex-1 bg-surface-secondary border border-border-default rounded-lg px-4 py-3.5 text-[0.95rem] text-text-primary font-sans placeholder:text-text-muted outline-none transition-all focus:border-accent-indigo focus:shadow-[0_0_0_3px_rgba(99,102,241,0.25)]"
           />
           <button
@@ -72,7 +72,7 @@ const AttentionPlayground: React.FC = () => {
             className="flex items-center justify-center gap-2 px-7 py-3.5 bg-gradient-to-r from-accent-indigo via-purple-500 to-accent-cyan rounded-lg text-white text-sm font-semibold cursor-pointer whitespace-nowrap shadow-[0_2px_12px_rgba(79,70,229,0.3)] transition-all hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(79,70,229,0.35)] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0"
           >
             <span className="text-base">⚡</span>
-            {loading ? "Analyzing…" : "Analyze"}
+            {loading ? t.analyzing : t.analyze}
           </button>
         </div>
       </div>
@@ -94,7 +94,7 @@ const AttentionPlayground: React.FC = () => {
               htmlFor="layer-select"
               className="text-xs font-medium uppercase tracking-wide text-text-tertiary"
             >
-              Layer
+              {t.layer}
             </label>
             <div className="relative">
               <select
@@ -118,7 +118,7 @@ const AttentionPlayground: React.FC = () => {
               htmlFor="head-select"
               className="text-xs font-medium uppercase tracking-wide text-text-tertiary"
             >
-              Head
+              {t.head}
             </label>
             <div className="relative">
               <select
@@ -144,21 +144,21 @@ const AttentionPlayground: React.FC = () => {
                 onClick={() => setViewMode("lines")}
                 className={`px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors ${viewMode === "lines" ? "bg-accent-indigo/20 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
               >
-                Flow
+                {t.viewLines}
               </button>
               <button
                 id="view-heatmap-btn"
                 onClick={() => setViewMode("heatmap")}
                 className={`px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors border-l border-border-default ${viewMode === "heatmap" ? "bg-accent-indigo/20 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
               >
-                Heatmap
+                {t.viewHeatmap}
               </button>
               <button
                 id="view-matrix-btn"
                 onClick={() => setViewMode("matrix")}
                 className={`px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors border-l border-border-default ${viewMode === "matrix" ? "bg-accent-indigo/20 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
               >
-                Matrix
+                {t.viewMatrix}
               </button>
             </div>
           </div>
@@ -167,8 +167,8 @@ const AttentionPlayground: React.FC = () => {
           {modelInfo && (
             <div className="flex flex-wrap gap-2 ml-auto">
               {[
-                ["Layers", modelInfo.num_layers],
-                ["Heads", modelInfo.num_heads],
+                [t.chips.layers, modelInfo.num_layers],
+                [t.chips.heads, modelInfo.num_heads],
                 ["d_model", modelInfo.d_model],
                 ["d_ff", modelInfo.d_ff],
               ].map(([label, value]) => (
@@ -194,7 +194,7 @@ const AttentionPlayground: React.FC = () => {
         <div className="flex flex-col items-center justify-center py-20 gap-5 bg-surface-card border border-border-default rounded-2xl">
           <div className="w-10 h-10 rounded-full border-3 border-border-default border-t-accent-indigo animate-spin" />
           <p className="text-sm text-text-tertiary">
-            Running forward pass…
+            {t.runningForward}
           </p>
         </div>
       )}
@@ -205,10 +205,10 @@ const AttentionPlayground: React.FC = () => {
             🔬
           </div>
           <h2 className="text-xl font-bold tracking-tight mb-2.5">
-            Ready to Analyze
+            {t.emptyTitle}
           </h2>
           <p className="text-sm text-text-secondary max-w-[380px] leading-relaxed">
-            Enter a sentence above to see the Transformer in action.
+            {t.emptyBody}
           </p>
         </div>
       )}
@@ -220,13 +220,13 @@ const AttentionPlayground: React.FC = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle bg-surface-card/60">
               <h3 className="text-sm font-semibold text-text-primary">
                 {viewMode === "lines"
-                  ? "Attention Flow"
+                  ? t.panelLines
                   : viewMode === "heatmap"
-                    ? "Attention Heatmap"
-                    : "Q / K Matrix"}
+                    ? t.panelHeatmap
+                    : t.panelMatrix}
               </h3>
               <span className="text-xs text-text-tertiary font-mono">
-                Layer {layer} · Head {head}
+                {t.layerHead(layer, head)}
               </span>
             </div>
             <div className="p-6 overflow-x-auto flex justify-center min-h-[400px]">
@@ -258,10 +258,10 @@ const AttentionPlayground: React.FC = () => {
           <div className="bg-surface-card border border-border-default rounded-2xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.08),0_4px_16px_rgba(0,0,0,0.06)]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border-subtle bg-surface-card/60">
               <h3 className="text-sm font-semibold text-text-primary">
-                Tokenized Input
+                {t.tokensTitle}
               </h3>
               <span className="text-xs text-text-tertiary font-mono">
-                {filterData.left_text.length} tokens
+                {t.tokensCount(filterData.left_text.length)}
               </span>
             </div>
             <div className="p-6 flex flex-wrap gap-2">

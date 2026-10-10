@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
+import { useT } from '../../i18n';
 
 import type { PlotData, Step } from './types';
 
@@ -9,6 +10,9 @@ interface RegressionPlotProps {
 }
 
 const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) => {
+    const gradient = useT('gradient');
+    const t = gradient.plots.regression2d;
+    const labels = gradient.controls;
     const svgRef = useRef<SVGSVGElement>(null);
 
     useEffect(() => {
@@ -72,26 +76,26 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
             .attr("x", width / 2)
             .attr("y", height + 35)
             .attr("text-anchor", "middle")
-            .text("Característica (X)");
+            .text(t.xLabel);
 
         g.append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", -30)
             .attr("x", -height / 2)
             .attr("text-anchor", "middle")
-            .text("Objetivo (y)");
+            .text(t.yLabel);
 
-    }, [data, currentStep]);
+    }, [data, currentStep, t]);
 
     return (
         <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <h3 className="text-base font-bold text-slate-800 mb-1 shrink-0">Ajuste del Modelo</h3>
+            <h3 className="text-base font-bold text-slate-800 mb-1 shrink-0">{t.title}</h3>
             <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-2 min-h-0">
                 <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[500px]"></svg>
             </div>
             <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
                 <div className="w-2 h-2 rounded-full animate-pulse bg-indigo-500"></div>
-                Iteración: {currentStep?.iteration} | Coste: {currentStep?.cost.toFixed(4)}
+                {labels.iteration}: {currentStep?.iteration} | {gradient.plots.regression3d.cost}: {currentStep?.cost.toFixed(4)}
             </div>
         </div>
     );
