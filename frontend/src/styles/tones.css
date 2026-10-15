@@ -1,0 +1,19 @@
+/*
+ * `data-tone` maps an accent name to `--tone`, so a component styles itself
+ * once with `var(--tone)` and callers pick the colour declaratively.
+ */
+
+[data-tone] {
+  --tone-soft: color-mix(in srgb, var(--tone) 10%, transparent);
+  --tone-softer: color-mix(in srgb, var(--tone) 6%, transparent);
+  --tone-border: color-mix(in srgb, var(--tone) 22%, transparent);
+  --tone-strong: color-mix(in srgb, var(--tone) 85%, var(--text-primary));
+}
+
+[data-tone="indigo"] { --tone: var(--accent-indigo); }
+[data-tone="purple"] { --tone: var(--accent-purple); }
+[data-tone="cyan"] { --tone: var(--accent-cyan); }
+[data-tone="orange"] { --tone: var(--accent-orange); }
+[data-tone="green"] { --tone: var(--accent-green); }
+[data-tone="red"] { --tone: var(--accent-red); }
+[data-tone="neutral"] { --tone: var(--text-tertiary); }

@@ -59,7 +59,7 @@ const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) =>
           .attr("y1", srcIdx * BOX_H + PAD_TOP + BOX_H / 2)
           .attr("x2", rightX)
           .attr("y2", tgtIdx * BOX_H + PAD_TOP + BOX_H / 2)
-          .attr("stroke", "#4f46e5")
+          .style("stroke", "var(--accent-indigo)")
           .attr("stroke-width", 2)
           .attr("stroke-opacity", w)
           .attr("class", `line-src-${srcIdx}`);
@@ -84,7 +84,7 @@ const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) =>
         .attr("y", i * BOX_H + PAD_TOP + BOX_H / 2 + 1)
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 13)
         .attr("class", `text-left-${i}`);
 
@@ -98,14 +98,15 @@ const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) =>
         });
 
         // Highlight left token
-        svg.select(`.highlight-left-${i}`).attr("fill", "rgba(38, 28, 226, 0.1)");
-        svg.select(`.text-left-${i}`).attr("fill", "#0f172a");
+        svg.select(`.highlight-left-${i}`).style("fill", "color-mix(in srgb, var(--accent-indigo) 12%, transparent)");
+        svg.select(`.text-left-${i}`).style("fill", "var(--text-primary)");
 
         // Highlight right tokens proportionally
         rightText.forEach((_, j) => {
           svg
             .select(`.highlight-right-${j}`)
-            .attr("fill", `rgba(8,145,178,${(attn[i]?.[j] ?? 0) * 1.2})`);
+            .style("fill", "var(--accent-cyan)")
+            .style("fill-opacity", Math.min(1, (attn[i]?.[j] ?? 0) * 1.2));
         });
       });
       
@@ -119,9 +120,9 @@ const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) =>
               .attr("stroke-opacity", w);
           });
         });
-        svg.selectAll("[class^='highlight-left']").attr("fill", "transparent");
-        svg.selectAll("[class^='text-left']").attr("fill", "#334155");
-        svg.selectAll("[class^='highlight-right']").attr("fill", "transparent");
+        svg.selectAll("[class^='highlight-left']").style("fill", "transparent");
+        svg.selectAll("[class^='text-left']").style("fill", "var(--text-secondary)");
+        svg.selectAll("[class^='highlight-right']").style("fill", "transparent");
       });
     });
 
@@ -144,7 +145,7 @@ const AttentionLines: React.FC<AttentionLinesProps> = ({ data, layer, head }) =>
         .attr("y", i * BOX_H + PAD_TOP + BOX_H / 2 + 1)
         .attr("text-anchor", "start")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 13)
         .style("font-family", "'JetBrains Mono', monospace");
     });

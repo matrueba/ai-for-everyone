@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useT } from '../../i18n';
+import PlotPanel, { Readout } from './PlotPanel';
+import { AXIS_LABEL } from './chartStyles';
 
 import type { PlotData, Step } from './types';
 
@@ -55,7 +57,7 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
             .attr("cx", d => x(d.x))
             .attr("cy", d => y(d.y))
             .attr("r", 4)
-            .attr("fill", "#6366f1")
+            .style("fill", "var(--accent-indigo)")
             .attr("opacity", 0.6);
 
         // Regression line
@@ -67,8 +69,8 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
         g.append("path")
             .datum(lineData)
             .attr("fill", "none")
-            .attr("stroke", "#ef4444")
-            .attr("stroke-width", 2)
+            .style("stroke", "var(--accent-red)")
+            .attr("stroke-width", 2.5)
             .attr("d", line);
 
         // Labels
@@ -76,6 +78,7 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
             .attr("x", width / 2)
             .attr("y", height + 35)
             .attr("text-anchor", "middle")
+            .attr("class", AXIS_LABEL)
             .text(t.xLabel);
 
         g.append("text")
@@ -83,21 +86,23 @@ const RegressionPlot: React.FC<RegressionPlotProps> = ({ data, currentStep }) =>
             .attr("y", -30)
             .attr("x", -height / 2)
             .attr("text-anchor", "middle")
+            .attr("class", AXIS_LABEL)
             .text(t.yLabel);
 
     }, [data, currentStep, t]);
 
     return (
-        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <h3 className="text-base font-bold text-slate-800 mb-1 shrink-0">{t.title}</h3>
-            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-2 min-h-0">
-                <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[500px]"></svg>
-            </div>
-            <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
-                <div className="w-2 h-2 rounded-full animate-pulse bg-indigo-500"></div>
-                {labels.iteration}: {currentStep?.iteration} | {gradient.plots.regression3d.cost}: {currentStep?.cost.toFixed(4)}
-            </div>
-        </div>
+        <PlotPanel
+            title={t.title}
+            footer={
+                <>
+                    <Readout label={`${labels.iteration}:`} value={currentStep?.iteration} />
+                    <Readout label={`${gradient.plots.regression3d.cost}:`} value={currentStep?.cost.toFixed(4)} tone="red" />
+                </>
+            }
+        >
+            <svg ref={svgRef} viewBox="0 0 500 400"></svg>
+        </PlotPanel>
     );
 };
 

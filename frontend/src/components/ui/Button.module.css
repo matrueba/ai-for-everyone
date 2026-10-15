@@ -1,0 +1,104 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease,
+    transform var(--duration-fast) ease;
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.45;
+}
+
+.button:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Sizes */
+.button[data-size="sm"] {
+  height: 32px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.button[data-size="md"] {
+  height: 40px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.button[data-size="lg"] {
+  height: 48px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-base);
+}
+
+.button[data-icon-only] {
+  padding: 0;
+  aspect-ratio: 1;
+}
+
+/* Variants */
+.button[data-variant="primary"] {
+  background: var(--accent-indigo);
+  color: var(--text-on-accent);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--accent-indigo) 30%, transparent),
+    0 4px 12px color-mix(in srgb, var(--accent-indigo) 22%, transparent);
+}
+
+.button[data-variant="primary"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-indigo) 88%, black);
+}
+
+:root[data-theme="dark"] .button[data-variant="primary"] {
+  background: color-mix(in srgb, var(--accent-indigo) 80%, black);
+}
+
+:root[data-theme="dark"] .button[data-variant="primary"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-indigo) 92%, black);
+}
+
+.button[data-variant="secondary"] {
+  background: var(--surface-card);
+  border-color: var(--border-default);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-xs);
+}
+
+.button[data-variant="secondary"]:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+  background: var(--surface-raised);
+}
+
+.button[data-variant="ghost"] {
+  color: var(--text-secondary);
+}
+
+.button[data-variant="ghost"]:hover:not(:disabled) {
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+}
+
+.button[data-variant="danger"] {
+  background: var(--accent-red);
+  color: var(--text-on-accent);
+}
+
+.button[data-variant="danger"]:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent-red) 88%, black);
+}

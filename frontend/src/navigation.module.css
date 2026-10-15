@@ -1,0 +1,17 @@
+.link {
+  display: inline;
+  color: var(--accent-indigo);
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color var(--duration-fast) ease;
+}
+
+.link:hover {
+  color: color-mix(in srgb, var(--accent-indigo) 75%, var(--text-primary));
+}
+
+.fallback {
+  color: var(--accent-indigo);
+}

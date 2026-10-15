@@ -2,9 +2,8 @@ import React, { useMemo, useRef } from "react";
 import type { NNPlaygroundResponse } from "../../api";
 import { forward } from "./network";
 import { useT } from "../../i18n";
-
-const INDIGO = "#4f46e5";
-const ORANGE = "#ea580c";
+import { useChartTheme } from "../charts/chartTheme";
+import styles from "./DataCanvas.module.css";
 
 const SIZE = 280;
 const DOMAIN = 3; // los datos viven en [-3, 3] x [-3, 3]
@@ -21,6 +20,9 @@ interface DataCanvasProps {
 
 const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
     const t = useT("neuralnet").canvas;
+    const { palette } = useChartTheme();
+    const INDIGO = palette.indigo;
+    const ORANGE = palette.orange;
     const svgRef = useRef<SVGSVGElement>(null);
     const dragging = useRef(false);
 
@@ -52,7 +54,7 @@ const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
         <svg
             ref={svgRef}
             viewBox={`0 0 ${SIZE} ${SIZE}`}
-            className="w-full h-auto rounded-xl border border-slate-200 bg-white cursor-crosshair touch-none"
+            className={styles.canvas}
             onPointerDown={(e) => {
                 dragging.current = true;
                 e.currentTarget.setPointerCapture(e.pointerId);
@@ -86,15 +88,15 @@ const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
                 cy={SIZE / 2}
                 r={(net.radius / (2 * DOMAIN)) * SIZE}
                 fill="none"
-                stroke="#64748b"
+                stroke={palette.textMuted}
                 strokeWidth={1.2}
                 strokeDasharray="5 4"
                 opacity={0.6}
             />
 
             {/* Ejes */}
-            <line x1={SIZE / 2} y1={0} x2={SIZE / 2} y2={SIZE} stroke="#e2e8f0" strokeWidth={1} />
-            <line x1={0} y1={SIZE / 2} x2={SIZE} y2={SIZE / 2} stroke="#e2e8f0" strokeWidth={1} />
+            <line x1={SIZE / 2} y1={0} x2={SIZE / 2} y2={SIZE} stroke={palette.muted} strokeWidth={1} opacity={0.35} />
+            <line x1={0} y1={SIZE / 2} x2={SIZE} y2={SIZE / 2} stroke={palette.muted} strokeWidth={1} opacity={0.35} />
 
             {/* Datos de entrenamiento */}
             {net.data.x1.map((dx, i) => (
@@ -109,14 +111,14 @@ const DataCanvas: React.FC<DataCanvasProps> = ({ net, x1, x2, onChange }) => {
             ))}
 
             {/* Punto de entrada actual */}
-            <line x1={toPx(x1)} y1={toPy(x2) - 14} x2={toPx(x1)} y2={toPy(x2) + 14} stroke="#0f172a" strokeWidth={1} opacity={0.4} />
-            <line x1={toPx(x1) - 14} y1={toPy(x2)} x2={toPx(x1) + 14} y2={toPy(x2)} stroke="#0f172a" strokeWidth={1} opacity={0.4} />
+            <line x1={toPx(x1)} y1={toPy(x2) - 14} x2={toPx(x1)} y2={toPy(x2) + 14} stroke={palette.textStrong} strokeWidth={1} opacity={0.4} />
+            <line x1={toPx(x1) - 14} y1={toPy(x2)} x2={toPx(x1) + 14} y2={toPy(x2)} stroke={palette.textStrong} strokeWidth={1} opacity={0.4} />
             <circle
                 cx={toPx(x1)}
                 cy={toPy(x2)}
                 r={8}
-                fill="#ffffff"
-                stroke="#0f172a"
+                fill={palette.surface}
+                stroke={palette.textStrong}
                 strokeWidth={2.5}
                 style={{ filter: "drop-shadow(0 2px 4px rgba(15,23,42,0.35))" }}
             />

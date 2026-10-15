@@ -12,8 +12,8 @@ export const neuralnet: Dict["neuralnet"] = {
     problem: (hiddenSize: number) => (
         <>
             This neural network (2 inputs → {hiddenSize} hidden neurons → 1 output) was trained to solve a simple
-            problem: deciding whether a point <span className="font-mono">(x₁, x₂)</span> is{" "}
-            <strong className="text-indigo-600">inside</strong> or <strong className="text-orange-600">outside</strong>{" "}
+            problem: deciding whether a point <span className="mono">(x₁, x₂)</span> is{" "}
+            <strong className="tone-indigo">inside</strong> or <strong className="tone-orange">outside</strong>{" "}
             a circle. A linear model cannot solve it, but a single hidden layer can.{" "}
             <strong>Drag the point</strong> across the map (or use the sliders) and watch which neurons light up and
             what signal flows through each connection.
@@ -31,7 +31,7 @@ export const neuralnet: Dict["neuralnet"] = {
 
     graph: {
         heading: "Inside the network",
-        propagate: "▶ Propagate signal step by step",
+        propagate: "Propagate signal step by step",
         ariaLabel: "Neural network graph",
         layers: {
             input: "Input",
@@ -71,7 +71,7 @@ export const neuralnet: Dict["neuralnet"] = {
         hiddenBody: (
             <>
                 It first computes the <strong>weighted sum</strong> of its inputs plus the bias, and then applies the{" "}
-                <strong>ReLU</strong> activation function: <span className="font-mono">max(0, z)</span>.
+                <strong>ReLU</strong> activation function: <span className="mono">max(0, z)</span>.
             </>
         ),
         hiddenInactive: " Since z is negative, this neuron does not fire (output 0).",
@@ -100,7 +100,7 @@ export const neuralnet: Dict["neuralnet"] = {
             title: "ReLU activation",
             body: (
                 <>
-                    The function <span className="font-mono">ReLU(z) = max(0, z)</span> decides whether the neuron
+                    The function <span className="mono">ReLU(z) = max(0, z)</span> decides whether the neuron
                     “fires”. If the weighted sum is negative, the neuron stays <strong>inactive</strong> and
                     contributes nothing. This non-linearity is what lets the network learn curved boundaries like the
                     circle.

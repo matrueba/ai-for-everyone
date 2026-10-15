@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
+import Icon from "./components/ui/Icon";
 import Home from "./pages/Home";
 import Visualizer from "./pages/Visualizer";
 import GradientDescent from "./pages/GradientDescent";
@@ -11,53 +12,75 @@ import NeuralNetwork from "./pages/NeuralNetwork";
 import { NavProvider } from "./navigation";
 import { useT } from "./i18n";
 import type { PageId } from "./i18n/content-types";
+import styles from "./App.module.css";
+
+const PAGES: Record<PageId, React.FC> = {
+  home: Home,
+  history: History,
+  train: Train,
+  "gradient-descent": GradientDescent,
+  inference: Inference,
+  "neural-network": NeuralNetwork,
+  evaluation: Evaluation,
+  visualizer: Visualizer,
+};
 
 function App(): React.JSX.Element {
   const [activePage, setActivePage] = useState<PageId>("home");
+  const [menuOpen, setMenuOpen] = useState<boolean>(false);
+  const mainRef = useRef<HTMLElement>(null);
   const t = useT("common");
 
+  const navigate = useCallback((page: PageId) => {
+    setActivePage(page);
+    setMenuOpen(false);
+  }, []);
+
+  // Each page starts at the top, like a fresh navigation would.
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0 });
+  }, [activePage]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
+  const ActivePage = PAGES[activePage];
+
   return (
-    <NavProvider value={setActivePage}>
-      <div className="flex h-screen bg-surface-primary text-text-primary overflow-hidden font-sans">
-        {/* Background decoration */}
-        <div className="pointer-events-none fixed inset-0 z-0">
-          <div className="absolute -top-48 -left-24 w-[600px] h-[600px] rounded-full bg-accent-indigo/5 blur-[120px]" />
-          <div className="absolute -bottom-24 -right-24 w-[500px] h-[500px] rounded-full bg-accent-cyan/5 blur-[120px]" />
-        </div>
+    <NavProvider value={navigate}>
+      <div className={styles.shell}>
+        <header className={styles.topbar}>
+          <button
+            type="button"
+            className={styles.menuButton}
+            onClick={() => setMenuOpen(true)}
+            aria-label={t.nav.openMenu}
+            aria-expanded={menuOpen}
+            aria-controls="app-sidebar"
+          >
+            <Icon name="menu" size={20} />
+          </button>
+          <span className={styles.topbarTitle}>{t.menu[activePage]}</span>
+        </header>
 
-        <Sidebar activePage={activePage} setActivePage={setActivePage} />
+        <Sidebar activePage={activePage} onNavigate={navigate} open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-        <div className="flex-1 flex flex-col min-w-0 relative z-10">
+        <div
+          className={styles.backdrop}
+          data-open={menuOpen || undefined}
+          onClick={() => setMenuOpen(false)}
+          aria-hidden
+        />
 
-          {/* Content Area */}
-          <main className="flex-1 min-h-0 overflow-hidden">
-            <div className="mx-auto h-full">
-              {activePage === "home" && <Home />}
-              {activePage === "history" && <History />}
-              {activePage === "visualizer" && <Visualizer />}
-              {activePage === "gradient-descent" && <GradientDescent />}
-              {activePage === "train" && <Train />}
-              {activePage === "inference" && <Inference />}
-              {activePage === "neural-network" && <NeuralNetwork />}
-              {activePage === "evaluation" && <Evaluation />}
-            </div>
-          </main>
-
-          {/* Footer */}
-          <footer className="h-12 border-t border-border-subtle px-8 flex items-center justify-between text-[0.65rem] text-text-tertiary font-mono shrink-0">
-            <div className="flex items-center gap-4">
-              <span>{t.footer.copyright}</span>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noreferrer"
-                className="text-[0.65rem] font-bold text-text-secondary hover:text-accent-indigo transition-colors flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border-default hover:border-accent-indigo/30"
-              >
-                {t.footer.github}
-              </a>
-            </div>
-          </footer>
-        </div>
+        <main ref={mainRef} className={styles.main}>
+          <ActivePage key={activePage} />
+        </main>
       </div>
     </NavProvider>
   );

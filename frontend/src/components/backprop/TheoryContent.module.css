@@ -1,0 +1,64 @@
+/* Aligned with the page header (the page itself is wide for the playground tabs). */
+.theory {
+  max-width: var(--width-content);
+}
+
+.costGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.costCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.costCard > p {
+  flex: 1;
+}
+
+.costTitle {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.terms {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.terms > div {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: baseline;
+}
+
+.terms dt {
+  justify-self: start;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--accent-indigo);
+  background: color-mix(in srgb, var(--accent-indigo) 10%, transparent);
+  white-space: nowrap;
+}
+
+.terms dd {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* Keep paragraphs at a readable measure even when the card is wider */
+.theory :global(.prose) > p {
+  max-width: 75ch;
+}

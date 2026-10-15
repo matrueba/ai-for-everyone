@@ -1,0 +1,107 @@
+/* Layout shared by the linear and logistic regression playgrounds. */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.title {
+  font-size: var(--text-2xl);
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.subtitle {
+  margin-top: var(--space-1);
+  color: var(--text-tertiary);
+}
+
+/* Explanation on the left, live charts on the right; stacked below 1280px with the charts first. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 4fr) minmax(0, 8fr);
+  grid-template-areas: "explain work";
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.explain {
+  grid-area: explain;
+  position: sticky;
+  top: var(--space-5);
+  max-height: calc(100dvh - 2 * var(--space-5));
+  overflow-y: auto;
+}
+
+.work {
+  grid-area: work;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.plots {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 1279px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "work"
+      "explain";
+  }
+
+  .explain {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .plots {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Explanation content ── */
+.explainHeading {
+  font-size: var(--text-2xl);
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.subheading {
+  margin-top: var(--space-8);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.legend {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.legend > div {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border-subtle);
+  line-height: var(--leading-snug);
+}
+
+.lrTerm {
+  display: block;
+  font-weight: 700;
+  color: var(--accent-red);
+}

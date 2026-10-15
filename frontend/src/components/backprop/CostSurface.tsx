@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { useT } from '../../i18n';
+import PlotPanel, { Readout } from './PlotPanel';
+import Tabs from '../ui/Tabs';
+import { AXIS_LABEL } from './chartStyles';
 
 import type { SurfaceData, Step } from './types';
 
@@ -62,7 +65,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
 
             g.append("g")
                 .attr("fill", "none")
-                .attr("stroke", "#fff")
+                .style("stroke", "var(--surface-card)")
                 .attr("stroke-opacity", 0.5)
                 .selectAll("path")
                 .data(contours)
@@ -85,7 +88,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
             g.append("path")
                 .datum(pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#ef4444")
+                .style("stroke", "var(--accent-red)")
                 .attr("stroke-width", 2)
                 .attr("stroke-dasharray", "4,2")
                 .attr("d", line);
@@ -97,8 +100,8 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                         .attr("cx", x(current.w))
                         .attr("cy", y(current.b))
                         .attr("r", 6)
-                        .attr("fill", "#ef4444")
-                        .attr("stroke", "#fff")
+                        .style("fill", "var(--accent-red)")
+                        .style("stroke", "var(--surface-card)")
                         .attr("stroke-width", 2);
                 }
             }
@@ -107,7 +110,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", width / 2)
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisWeight);
 
             g.append("text")
@@ -115,7 +118,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", -45)
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisBias);
 
         } else if (dimension === 'mse') {
@@ -131,9 +134,9 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
 
             // Grid lines
             g.append("g")
-                .attr("class", "grid")
-                .attr("stroke", "#f1f5f9")
-                .call(d3.axisLeft(y).tickSize(-width).tickFormat(() => ""));
+                .style("color", "var(--border-default)")
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(() => ""))
+                .call(grid => grid.select(".domain").remove());
 
             g.append("g")
                 .attr("transform", `translate(0,${height})`)
@@ -152,7 +155,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
             g.append("path")
                 .datum(steps)
                 .attr("fill", "none")
-                .attr("stroke", "#e2e8f0")
+                .style("stroke", "var(--border-strong)")
                 .attr("stroke-width", 1.5)
                 .attr("d", line);
 
@@ -160,7 +163,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
             g.append("path")
                 .datum(pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#6366f1")
+                .style("stroke", "var(--accent-indigo)")
                 .attr("stroke-width", 3)
                 .attr("d", line);
 
@@ -171,8 +174,8 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                         .attr("cx", x(current.iteration))
                         .attr("cy", y(current.cost))
                         .attr("r", 5)
-                        .attr("fill", "#6366f1")
-                        .attr("stroke", "#fff")
+                        .style("fill", "var(--accent-indigo)")
+                        .style("stroke", "var(--surface-card)")
                         .attr("stroke-width", 2);
 
                     // Vertical indicator
@@ -181,7 +184,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                         .attr("y1", 0)
                         .attr("x2", x(current.iteration))
                         .attr("y2", height)
-                        .attr("stroke", "#6366f1")
+                        .style("stroke", "var(--accent-indigo)")
                         .attr("stroke-width", 1)
                         .attr("stroke-dasharray", "4,4")
                         .attr("opacity", 0.5);
@@ -192,7 +195,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", width / 2)
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisIteration);
 
             g.append("text")
@@ -200,7 +203,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", -45)
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisCostMse);
         } else if (dimension === '1d' && surface && surface.w && surface.b) {
             // --- 1D Visualization (Cost vs W) ---
@@ -228,9 +231,9 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
 
             // Grid lines
             g.append("g")
-                .attr("class", "grid")
-                .attr("stroke", "#f1f5f9")
-                .call(d3.axisLeft(y).tickSize(-width).tickFormat(() => ""));
+                .style("color", "var(--border-default)")
+                .call(d3.axisLeft(y).tickSize(-width).tickFormat(() => ""))
+                .call(grid => grid.select(".domain").remove());
 
             g.append("g")
                 .attr("transform", `translate(0,${height})`)
@@ -248,7 +251,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
             g.append("path")
                 .datum(zRow)
                 .attr("fill", "none")
-                .attr("stroke", "#94a3b8")
+                .style("stroke", "var(--text-muted)")
                 .attr("stroke-width", 2)
                 .attr("d", surfaceLine as any);
 
@@ -275,7 +278,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
             g.append("path")
                 .datum(pathData)
                 .attr("fill", "none")
-                .attr("stroke", "#ef4444")
+                .style("stroke", "var(--accent-red)")
                 .attr("stroke-width", 2)
                 .attr("d", stepsLine as any);
 
@@ -286,8 +289,8 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("cx", d => x(d.w))
                 .attr("cy", d => y(getCost1D(d.w)))
                 .attr("r", 4)
-                .attr("fill", "#ef4444")
-                .attr("stroke", "#fff")
+                .style("fill", "var(--accent-red)")
+                .style("stroke", "var(--surface-card)")
                 .attr("stroke-width", 1);
 
             if (pathData.length > 0) {
@@ -298,7 +301,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                         .attr("y1", y(getCost1D(current.w)))
                         .attr("x2", x(current.w))
                         .attr("y2", height)
-                        .attr("stroke", "#ef4444")
+                        .style("stroke", "var(--accent-red)")
                         .attr("stroke-dasharray", "4,4")
                         .attr("opacity", 0.6);
                 }
@@ -308,7 +311,7 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("x", width / 2)
                 .attr("y", height + 40)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisWeight);
 
             g.append("text")
@@ -316,55 +319,37 @@ const CostSurface: React.FC<CostSurfaceProps> = ({ surface, steps, currentIterat
                 .attr("y", -45)
                 .attr("x", -height / 2)
                 .attr("text-anchor", "middle")
-                .attr("class", "text-xs font-bold text-slate-400")
+                .attr("class", AXIS_LABEL)
                 .text(t.axisCostJ);
         }
 
     }, [surface, steps, currentIteration, dimension, t]);
 
     return (
-        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-1 shrink-0">
-                <div>
-                    <h3 className="text-base font-bold text-slate-800">
-                        {t.titles[dimension]}
-                    </h3>
-                    <p className="text-xs text-slate-500">
-                        {t.subtitles[dimension]}
-                    </p>
-                </div>
-
-                <div className="flex bg-slate-100 p-0.5 rounded-lg">
-                    <button
-                        onClick={() => setDimension('1d')}
-                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === '1d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        1D
-                    </button>
-                    <button
-                        onClick={() => setDimension('2d')}
-                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        2D
-                    </button>
-                    <button
-                        onClick={() => setDimension('mse')}
-                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all ${dimension === 'mse' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                    >
-                        MSE
-                    </button>
-                </div>
-            </div>
-
-            <div className="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl p-2 min-h-0">
-                <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-w-[500px]"></svg>
-            </div>
-
-            <div className="mt-1 flex items-center gap-3 text-xs font-medium text-slate-600 shrink-0">
-                <div className={`w-2 h-2 rounded-full animate-pulse ${dimension === '2d' ? 'bg-rose-500' : 'bg-indigo-500'}`}></div>
-                {dimension === '2d' ? t.searching : `${t.currentCost} ${steps && steps[currentIteration]?.cost.toFixed(4)}`}
-            </div>
-        </div>
+        <PlotPanel
+            title={t.titles[dimension]}
+            subtitle={t.subtitles[dimension]}
+            actions={
+                <Tabs
+                    label={t.titles[dimension]}
+                    size="sm"
+                    value={dimension}
+                    onChange={setDimension}
+                    items={[
+                        { id: '1d', label: '1D' },
+                        { id: '2d', label: '2D' },
+                        { id: 'mse', label: 'MSE' },
+                    ]}
+                />
+            }
+            footer={
+                dimension === '2d'
+                    ? <span>{t.searching}</span>
+                    : <Readout label={t.currentCost} value={steps?.[currentIteration]?.cost.toFixed(4)} tone="red" />
+            }
+        >
+            <svg ref={svgRef} viewBox="0 0 500 400"></svg>
+        </PlotPanel>
     );
 };
 

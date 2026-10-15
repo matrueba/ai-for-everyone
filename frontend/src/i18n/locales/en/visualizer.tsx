@@ -92,7 +92,7 @@ export const visualizer: Dict["visualizer"] = {
         matrixTitle: (name: string) => `${name} matrix`,
         selectedToken: (token: string, index: number) => (
             <>
-                Selected token: <span className="text-accent-indigo font-semibold">{token}</span> (index {index}) — click
+                Selected token: <strong className="tone-indigo">{token}</strong> (index {index}) — click
                 another cell to change
             </>
         ),

@@ -9,7 +9,7 @@ export const history = {
     prevSlide: "Diapositiva anterior",
     nextSlide: "Siguiente diapositiva",
     keyboardTip: {
-        prefix: "💡 Consejo: puedes usar las teclas de flecha",
+        prefix: "Consejo: puedes usar las teclas de flecha",
         middle: "y",
         suffix: "para navegar.",
     },

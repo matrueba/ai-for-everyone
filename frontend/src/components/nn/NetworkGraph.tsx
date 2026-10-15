@@ -2,11 +2,8 @@ import React from "react";
 import type { NNPlaygroundResponse } from "../../api";
 import type { ForwardPass, SelectedNeuron } from "./network";
 import { useT } from "../../i18n";
-
-const INDIGO = "#4f46e5";
-const ORANGE = "#ea580c";
-const CYAN = "#0891b2";
-const SLATE = "#94a3b8";
+import { useChartTheme } from "../charts/chartTheme";
+import styles from "./NetworkGraph.module.css";
 
 interface NetworkGraphProps {
     net: NNPlaygroundResponse;
@@ -18,6 +15,13 @@ interface NetworkGraphProps {
 
 const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected, onSelect }) => {
     const t = useT("neuralnet").graph;
+    const { palette, theme } = useChartTheme();
+    const INDIGO = palette.indigo;
+    const ORANGE = palette.orange;
+    const CYAN = palette.cyan;
+    const SLATE = palette.muted;
+    const INK = palette.textStrong;
+    const ON_ACCENT = theme === "dark" ? "#0b1120" : "#ffffff";
     const hiddenSize = net.b1.length;
 
     const WIDTH = 680;
@@ -54,21 +58,21 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
     );
 
     return (
-        <div className="w-full">
+        <div className={styles.graph}>
             <svg
                 viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-                className="w-full h-auto select-none"
+                className={styles.svg}
                 role="img"
                 aria-label={t.ariaLabel}
             >
                 {/* Etiquetas de capas */}
-                <text x={layerX[0]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
+                <text x={layerX[0]} y={30} textAnchor="middle" fill={palette.textMuted} fontSize={13} fontWeight={700}>
                     {t.layers.input}
                 </text>
-                <text x={layerX[1]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
+                <text x={layerX[1]} y={30} textAnchor="middle" fill={palette.textMuted} fontSize={13} fontWeight={700}>
                     {t.layers.hidden}
                 </text>
-                <text x={layerX[2]} y={30} textAnchor="middle" className="fill-slate-500" fontSize={13} fontWeight={700}>
+                <text x={layerX[2]} y={30} textAnchor="middle" fill={palette.textMuted} fontSize={13} fontWeight={700}>
                     {t.layers.output}
                 </text>
 
@@ -122,7 +126,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                             <g
                                 key={`in-${i}`}
                                 onClick={() => toggleSelect({ layer: "input", index: i })}
-                                className="cursor-pointer"
+                                className={styles.node}
                             >
                                 {isSelected("input", i) && selectionRing(layerX[0] ?? 0, inputY[i] ?? 0, R)}
                                 <circle
@@ -141,7 +145,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                                     textAnchor="middle"
                                     fontSize={13}
                                     fontWeight={700}
-                                    fill={intensity > 0.55 ? "#ffffff" : "#0f172a"}
+                                    fill={intensity > 0.55 ? ON_ACCENT : INK}
                                     fontFamily="JetBrains Mono, monospace"
                                 >
                                     {x.toFixed(2)}
@@ -152,7 +156,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                                     textAnchor="middle"
                                     fontSize={15}
                                     fontWeight={800}
-                                    className="fill-slate-600"
+                                    fill={palette.text}
                                 >
                                     {i === 0 ? "x₁" : "x₂"}
                                 </text>
@@ -170,14 +174,14 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                             <g
                                 key={`h-${j}`}
                                 onClick={() => toggleSelect({ layer: "hidden", index: j })}
-                                className="cursor-pointer"
+                                className={styles.node}
                             >
                                 {isSelected("hidden", j) && selectionRing(layerX[1] ?? 0, hiddenY(j), R)}
                                 <circle
                                     cx={layerX[1]}
                                     cy={hiddenY(j)}
                                     r={R}
-                                    fill={active ? INDIGO : "#f1f5f9"}
+                                    fill={active ? INDIGO : palette.sceneFloor}
                                     fillOpacity={active ? 0.2 + 0.8 * intensity : 1}
                                     stroke={active ? INDIGO : SLATE}
                                     strokeWidth={2}
@@ -193,7 +197,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                                     textAnchor="middle"
                                     fontSize={12}
                                     fontWeight={700}
-                                    fill={active && intensity > 0.5 ? "#ffffff" : active ? "#312e81" : "#94a3b8"}
+                                    fill={active && intensity > 0.5 ? ON_ACCENT : active ? INK : SLATE}
                                     fontFamily="JetBrains Mono, monospace"
                                 >
                                     {a.toFixed(2)}
@@ -203,7 +207,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                                         x={(layerX[1] ?? 0) + R + 8}
                                         y={hiddenY(j) + 4}
                                         fontSize={9.5}
-                                        className="fill-slate-400"
+                                        fill={SLATE}
                                         fontStyle="italic"
                                     >
                                         {t.inactive}
@@ -216,7 +220,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
 
                 {/* Neurona de salida */}
                 <g style={{ ...transition, opacity: vis(5) }}>
-                    <g onClick={() => toggleSelect({ layer: "output", index: 0 })} className="cursor-pointer">
+                    <g onClick={() => toggleSelect({ layer: "output", index: 0 })} className={styles.node}>
                         {isSelected("output", 0) && selectionRing(layerX[2] ?? 0, outputY, R + 4)}
                         <circle
                             cx={layerX[2]}
@@ -240,7 +244,7 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
                             textAnchor="middle"
                             fontSize={14}
                             fontWeight={800}
-                            fill={Math.abs(fp.outputA - 0.5) * 2 > 0.4 ? "#ffffff" : "#0f172a"}
+                            fill={Math.abs(fp.outputA - 0.5) * 2 > 0.4 ? ON_ACCENT : INK}
                             fontFamily="JetBrains Mono, monospace"
                         >
                             {(fp.outputA * 100).toFixed(0)}%
@@ -260,17 +264,17 @@ const NetworkGraph: React.FC<NetworkGraphProps> = ({ net, fp, animStep, selected
             </svg>
 
             {/* Leyenda */}
-            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2 text-[0.7rem] text-slate-500">
-                <span className="flex items-center gap-2">
-                    <span className="inline-block w-6 h-[3px] rounded" style={{ background: INDIGO }} />
+            <div className={styles.legend}>
+                <span className={styles.legendItem}>
+                    <span className={styles.swatch} style={{ background: INDIGO }} />
                     {t.legend.positive}
                 </span>
-                <span className="flex items-center gap-2">
-                    <span className="inline-block w-6 h-[3px] rounded" style={{ background: ORANGE }} />
+                <span className={styles.legendItem}>
+                    <span className={styles.swatch} style={{ background: ORANGE }} />
                     {t.legend.negative}
                 </span>
                 <span>{t.legend.thickness}</span>
-                <span className="italic">{t.legend.hint}</span>
+                <span className={styles.hint}>{t.legend.hint}</span>
             </div>
         </div>
     );

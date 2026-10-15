@@ -93,7 +93,7 @@ export const visualizer = {
         matrixTitle: (name: string) => `Matriz ${name}`,
         selectedToken: (token: string, index: number) => (
             <>
-                Token seleccionado: <span className="text-accent-indigo font-semibold">{token}</span> (índice {index}) —
+                Token seleccionado: <strong className="tone-indigo">{token}</strong> (índice {index}) —
                 haz clic en otra celda para cambiarlo
             </>
         ),

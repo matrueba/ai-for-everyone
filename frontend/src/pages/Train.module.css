@@ -1,0 +1,129 @@
+.lead {
+  margin-bottom: var(--space-6);
+}
+
+/* ── Elements A/B/C ── */
+.elements {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.elementTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.tableLabel {
+  margin: var(--space-5) 0 var(--space-2);
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--surface-card);
+}
+
+.table {
+  width: 100%;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th,
+.table td {
+  padding: var(--space-2) var(--space-4);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-tertiary);
+  background: var(--surface-sunken);
+}
+
+.table td {
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.table .target {
+  font-weight: 650;
+  color: var(--accent-indigo);
+  background: color-mix(in srgb, var(--accent-indigo) 6%, transparent);
+}
+
+/* ── Training cycle timeline ── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding: 0;
+  list-style: none;
+}
+
+.timelineItem {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-4);
+}
+
+/* Connector between step badges */
+.timelineItem:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  left: 13px;
+  top: 36px;
+  bottom: calc(-1 * var(--space-10) + 8px);
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(var(--accent-indigo), color-mix(in srgb, var(--accent-indigo) 10%, transparent));
+}
+
+.timelineBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.stepTitle {
+  margin-top: 3px;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.outro {
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* ── Closing ── */
+.ctaTitle {
+  font-size: var(--text-xl);
+  font-weight: 750;
+  color: var(--text-primary);
+}
+
+.ctaBody {
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: 400;
+  color: var(--text-tertiary);
+}

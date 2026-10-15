@@ -1,12 +1,21 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import Plotly from 'plotly.js-dist-min';
-import createPlotlyComponentModule from 'react-plotly.js/factory';
+import { Line } from '@react-three/drei';
+import { useChartTheme } from '../components/charts/chartTheme';
+import Scene3D from '../components/three/Scene3D';
+import Axes3D from '../components/three/Axes3D';
+import { Contours, Surface } from '../components/three/Surface';
+import { Points } from '../components/three/Points';
+import { KeyLegend, RampLegend } from '../components/three/Legend';
+import { extent, probabilityRamp, worldScales } from '../components/three/scale';
+import { Page, PageHeader } from '../components/ui/Page';
+import { Card, CardHeader } from '../components/ui/Card';
+import Tabs from '../components/ui/Tabs';
+import Button from '../components/ui/Button';
+import { Callout, Formula, Slider, Stat, Status } from '../components/ui/Bits';
+import NextStep from '../components/ui/NextStep';
 import { useI18n, useT } from '../i18n';
 import type { InferenceScenarioId } from '../i18n/content-types';
-
-// Fix for react-plotly.js typing/import issue in some environments
-const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
-const Plot = createPlotlyComponent(Plotly);
+import styles from './Inference.module.css';
 
 interface ModelData {
     w1: number;
@@ -82,130 +91,134 @@ interface InferencePlot3DProps {
     config: TabConfig;
 }
 
+const sigmoid = (z: number) => 1 / (1 + Math.exp(-z));
+const BOUNDARY = [0.5];
+
 const InferencePlot3D: React.FC<InferencePlot3DProps> = ({ model, inputX1, inputX2, predY, config }) => {
     const t = useT('inference').plot;
+    const { palette } = useChartTheme();
+    const w1 = model?.w1 ?? 0;
+    const w2 = model?.w2 ?? 0;
+    const b = model?.b ?? 0;
+    const dataY = model?.dataY;
 
-    if (!model) return null;
+    const ramp = useMemo(() => probabilityRamp(palette), [palette]);
 
-    const { dataX1, dataX2, dataY, w1, w2, b } = model;
+    // The box depends only on the scenario and the trained model, so it stays put while the sliders move.
+    const scales = useMemo(() => {
+        if (config.isClassification) return worldScales(config.x1Range, config.x2Range, [0, 1]);
+        const corners = [config.x1Range[0], config.x1Range[1]].flatMap(a =>
+            [config.x2Range[0], config.x2Range[1]].map(c => w1 * a + w2 * c + b)
+        );
+        return worldScales(config.x1Range, config.x2Range, extent([...(dataY ?? []), ...corners], 0.05));
+    }, [config, w1, w2, b, dataY]);
 
     const planeData = useMemo(() => {
-        const x1Min = config.x1Range[0];
-        const x1Max = config.x1Range[1];
-        const x2Min = config.x2Range[0];
-        const x2Max = config.x2Range[1];
-
-        const steps = config.isClassification ? 30 : 3;
+        const steps = config.isClassification ? 36 : 12;
         const x1Range: number[] = [];
         const x2Range: number[] = [];
         for (let i = 0; i <= steps; i++) {
-            x1Range.push(x1Min + (x1Max - x1Min) * i / steps);
-            x2Range.push(x2Min + (x2Max - x2Min) * i / steps);
+            x1Range.push(config.x1Range[0] + (config.x1Range[1] - config.x1Range[0]) * i / steps);
+            x2Range.push(config.x2Range[0] + (config.x2Range[1] - config.x2Range[0]) * i / steps);
         }
-
         const zPlane = x2Range.map(x2Val =>
             x1Range.map(x1Val => {
                 const z = w1 * x1Val + w2 * x2Val + b;
-                return config.isClassification ? 1 / (1 + Math.exp(-z)) : z;
+                return config.isClassification ? sigmoid(z) : z;
             })
         );
-        return { x: x1Range, y: x2Range, z: zPlane };
+        return { xs: x1Range, ys: x2Range, z: zPlane };
     }, [w1, w2, b, config]);
 
-    const minZ = config.isClassification ? 0 : Math.min(...dataY, predY);
-    const maxZ = config.isClassification ? 1 : Math.max(...dataY, predY);
-    const zRange = maxZ - minZ;
-    const plotMinZ = config.isClassification ? 0 : (minZ - zRange * 0.1);
+    if (!model) return null;
+
+    const { dataX1, dataX2 } = model;
+    const px = scales.x(inputX1);
+    const pz = scales.y(inputX2);
+    const zLo = scales.z.domain[0];
+    const zHi = scales.z.domain[1];
+    const py = scales.z(Math.min(zHi, Math.max(zLo, predY)));
 
     return (
-        <div className="bg-white rounded-2xl shadow-xl border border-slate-100 flex flex-col relative overflow-hidden h-full">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-violet-500 via-sky-500 to-emerald-500 z-10"></div>
-            <div className="p-6 pb-0">
-                <h3 className="text-xl font-bold text-slate-800">{config.title}</h3>
-                <p className="text-slate-500 text-sm">
-                    {config.description}
-                </p>
-            </div>
+        <Card padding="md" fill className={styles.plotCard}>
+            <CardHeader title={config.title} subtitle={config.description} icon="target" />
+            <div className={styles.plot}>
+                <Scene3D
+                    label={config.title}
+                    legend={
+                        <>
+                            {config.isClassification && <RampLegend ramp={ramp} low="P = 0" high="P = 1" />}
+                            <KeyLegend
+                                items={[
+                                    { label: t.dataName, color: config.isClassification ? palette.indigo : palette.data },
+                                    { label: t.modelName, color: config.isClassification ? palette.textStrong : palette.indigo, shape: 'line' },
+                                    { label: t.inputTooltip, color: palette.purple },
+                                    { label: t.predictionTooltip, color: palette.green },
+                                ]}
+                            />
+                        </>
+                    }
+                >
+                    <Axes3D
+                        scales={scales}
+                        x={{ label: config.x1Label, format: config.format1 }}
+                        y={{ label: config.x2Label, format: config.format2 }}
+                        z={{ label: config.yLabel, format: config.formatY }}
+                    />
+                    <Points
+                        x={dataX1}
+                        y={dataX2}
+                        z={model.dataY}
+                        scales={scales}
+                        color={config.isClassification
+                            ? (i => ((model.dataY[i] ?? 0) === 1 ? palette.indigo : palette.red))
+                            : palette.data}
+                        opacity={0.75}
+                        size={0.022}
+                    />
+                    {config.isClassification ? (
+                        <>
+                            <Surface xs={planeData.xs} ys={planeData.ys} z={planeData.z} scales={scales} colorRamp={ramp} opacity={0.7} />
+                            <Contours
+                                xs={planeData.xs}
+                                ys={planeData.ys}
+                                z={planeData.z}
+                                scales={scales}
+                                levels={BOUNDARY}
+                                colorFor={() => palette.textStrong}
+                                lineWidth={2.2}
+                            />
+                        </>
+                    ) : (
+                        <Surface
+                            xs={planeData.xs}
+                            ys={planeData.ys}
+                            z={planeData.z}
+                            scales={scales}
+                            color={palette.indigo}
+                            opacity={0.3}
+                            wireEvery={2}
+                            wireColor={palette.indigo}
+                            clip
+                        />
+                    )}
 
-
-            <div className="flex-1 w-full h-full min-h-0">
-                <Plot
-                    data={[
-                        {
-                            x: dataX1, y: dataX2, z: dataY,
-                            type: 'scatter3d', mode: 'markers',
-                            marker: {
-                                size: 3.5,
-                                color: config.isClassification
-                                    ? dataY.map(yVal => yVal === 1 ? '#10b981' : '#ef4444')
-                                    : '#cbd5e1',
-                                opacity: config.isClassification ? 0.8 : 0.5
-                            },
-                            name: t.dataName
-                        },
-                        {
-                            x: planeData.x, y: planeData.y, z: planeData.z,
-                            type: 'surface',
-                            colorscale: [[0, 'rgba(99, 102, 241, 0.4)'], [1, 'rgba(14, 165, 233, 0.4)']],
-                            showscale: false,
-                            name: t.modelName,
-                            hoverinfo: 'none',
-                            contours: {
-                                z: { show: true, usecolormap: true, highlightcolor: "white", project: { z: false } }
-                            }
-                        },
-                        {
-                            x: [inputX1, inputX1],
-                            y: [inputX2, inputX2],
-                            z: [plotMinZ, predY],
-                            type: 'scatter3d', mode: 'lines',
-                            line: { color: '#f43f5e', width: 6, dash: 'dash' },
-                            name: t.projectionName
-                        },
-                        {
-                            x: [inputX1, inputX1],
-                            y: [inputX2, inputX2],
-                            z: [plotMinZ, predY],
-                            type: 'scatter3d', mode: 'markers',
-                            marker: {
-                                size: 8,
-                                color: ['#8b5cf6', '#10b981'],
-                                line: { color: 'white', width: 2 }
-                            },
-                            text: [
-                                `${t.inputTooltip} (${config.x1Label}=${config.format1(inputX1)}, ${config.x2Label}=${config.format2(inputX2)})`,
-                                `${t.predictionTooltip} ${config.yLabel}=${config.formatY(predY)}`
-                            ],
-                            hoverinfo: 'text',
-                            name: t.keyPointsName
-                        }
-                    ]}
-                    layout={{
-                        autosize: true,
-                        margin: { l: 0, r: 0, b: 0, t: 0 },
-                        paper_bgcolor: 'transparent',
-                        plot_bgcolor: 'transparent',
-                        scene: {
-                            xaxis: { title: config.x1Label, gridcolor: 'white', backgroundcolor: 'rgb(248, 250, 252)', showbackground: true },
-                            yaxis: { title: config.x2Label, gridcolor: 'white', backgroundcolor: 'rgb(248, 250, 252)', showbackground: true },
-                            zaxis: {
-                                title: config.yLabel,
-                                gridcolor: 'white',
-                                backgroundcolor: 'rgb(241, 245, 249)',
-                                showbackground: true,
-                                range: config.isClassification ? [0, 1] : undefined
-                            },
-                            camera: { eye: { x: 1.5, y: 1.5, z: 0.8 } }
-                        },
-                        showlegend: true,
-                        legend: { x: 0, y: 1 }
-                    }}
-                    config={{ displayModeBar: false, responsive: true }}
-                    style={{ width: '100%', height: '100%' }}
-                    useResizeHandler={true}
-                />
+                    {/* From the input on the floor up to the model's answer */}
+                    <Line points={[[px, 0.004, pz], [px, py, pz]]} color={palette.orange} lineWidth={2.5} dashed dashSize={0.04} gapSize={0.025} />
+                    <mesh position={[px, 0.02, pz]}>
+                        <sphereGeometry args={[0.04, 24, 24]} />
+                        <meshStandardMaterial color={palette.purple} />
+                    </mesh>
+                    <mesh position={[px, py, pz]}>
+                        <sphereGeometry args={[0.05, 32, 32]} />
+                        <meshStandardMaterial color={palette.green} emissive={palette.green} emissiveIntensity={0.2} />
+                    </mesh>
+                </Scene3D>
             </div>
-        </div>
+            <p className={styles.plotCaption}>
+                {t.inputTooltip} ({config.x1Label} = {config.format1(inputX1)}, {config.x2Label} = {config.format2(inputX2)}) → {t.predictionTooltip} {config.yLabel} = {config.formatY(predY)}
+            </p>
+        </Card>
     );
 };
 
@@ -309,146 +322,107 @@ const Inference: React.FC = () => {
     }, [inputX1, inputX2, model, currentConfig]);
 
     return (
-        <div className="h-full bg-slate-50 p-4 md:p-6 flex flex-col gap-4 overflow-hidden">
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 shrink-0">
-                <div>
-                    <h1 className="text-4xl font-extrabold text-slate-900 mb-2">{t.title}</h1>
-                    <p className="text-slate-600 text-lg max-w-2xl">
-                        {t.subtitle}
-                    </p>
-                </div>
+        <Page width="wide">
+            <PageHeader
+                page="inference"
+                title={t.title}
+                subtitle={t.subtitle}
+                actions={
+                    <Tabs<InferenceScenarioId>
+                        label={t.title}
+                        value={activeTab}
+                        onChange={setActiveTab}
+                        items={SCENARIO_IDS.map(id => ({ id, label: t.scenarios[id].tab }))}
+                    />
+                }
+            />
 
-                <div className="flex bg-white p-1 rounded-xl shadow-sm border border-slate-200">
-                    {SCENARIO_IDS.map(id => (
-                        <button
-                            key={id}
-                            onClick={() => setActiveTab(id)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === id ? 'bg-indigo-600 text-white shadow-md' : 'text-slate-500 hover:bg-slate-50'}`}
-                        >
-                            {t.scenarios[id].tab}
-                        </button>
-                    ))}
-                </div>
-            </header>
-
-            {/* Intro Card */}
-            <div className="bg-gradient-to-r from-indigo-50 via-indigo-50 to-sky-50 rounded-2xl p-4 md:p-5 border border-indigo-100/50 shadow-sm relative overflow-hidden flex flex-col md:flex-row gap-4 items-center shrink-0">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-bl-full pointer-events-none"></div>
-                <div>
-                    <p className="text-slate-700 leading-relaxed text-sm md:text-base">
-                        {t.intro}
-                    </p>
-                </div>
+            <div className={styles.intro}>
+                <Callout icon="info">
+                    <p>{t.intro}</p>
+                </Callout>
             </div>
 
-            <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-                <div className="flex flex-col gap-6 overflow-y-auto pb-2">
-
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border border-slate-100 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-bl-full -z-10 blur-2xl"></div>
-
-                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                            <span className="w-8 h-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">🎮</span>
-                            {t.params.heading}
-                        </h2>
-
-                        <div className="space-y-6">
-                            <div>
-                                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
-                                    <span>{currentConfig.x1Label}</span>
-                                    <span className="text-violet-600 font-mono">{currentConfig.format1(inputX1)}</span>
-                                </label>
-                                <input
-                                    type="range"
-                                    min={currentConfig.x1Range[0]}
-                                    max={currentConfig.x1Range[1]}
-                                    step={currentConfig.step1}
-                                    value={inputX1}
-                                    onChange={(e) => setInputX1(parseFloat(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-violet-500"
-                                />
-                            </div>
-                            <div>
-                                <label className="flex justify-between text-sm font-bold text-slate-700 mb-2">
-                                    <span>{currentConfig.x2Label}</span>
-                                    <span className="text-sky-600 font-mono">{currentConfig.format2(inputX2)}</span>
-                                </label>
-                                <input
-                                    type="range"
-                                    min={currentConfig.x2Range[0]}
-                                    max={currentConfig.x2Range[1]}
-                                    step={currentConfig.step2}
-                                    value={inputX2}
-                                    onChange={(e) => setInputX2(parseFloat(e.target.value))}
-                                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-500"
-                                />
-                            </div>
+            <div className={styles.layout}>
+                <div className={styles.side}>
+                    <Card padding="md">
+                        <CardHeader title={t.params.heading} icon="sliders" tone="purple" />
+                        <div className={styles.sliders}>
+                            <Slider
+                                label={currentConfig.x1Label}
+                                valueLabel={currentConfig.format1(inputX1)}
+                                min={currentConfig.x1Range[0]}
+                                max={currentConfig.x1Range[1]}
+                                step={currentConfig.step1}
+                                value={inputX1}
+                                onChange={setInputX1}
+                                tone="purple"
+                            />
+                            <Slider
+                                label={currentConfig.x2Label}
+                                valueLabel={currentConfig.format2(inputX2)}
+                                min={currentConfig.x2Range[0]}
+                                max={currentConfig.x2Range[1]}
+                                step={currentConfig.step2}
+                                value={inputX2}
+                                onChange={setInputX2}
+                                tone="cyan"
+                            />
                         </div>
-                    </div>
+                    </Card>
 
-                    <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-6 rounded-2xl shadow-xl text-white relative overflow-hidden">
-                        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-sky-500/20 rounded-full blur-3xl"></div>
-
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-white">
-                            <span className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">🧠</span>
-                            {t.brain.heading}
-                        </h2>
-
-                        <div className="space-y-4 text-sm">
-                            <div className="p-4 bg-white/5 rounded-xl border border-white/10">
-                                <p className="text-slate-400 mb-1">{t.brain.equation}</p>
-                                <p className="text-lg font-mono text-sky-400">
-                                    {currentConfig.isClassification ? 'Y = σ(W₁·X₁ + W₂·X₂ + b)' : 'Y = W₁·X₁ + W₂·X₂ + b'}
-                                </p>
+                    <Card padding="md">
+                        <CardHeader title={t.brain.heading} icon="cpu" />
+                        <div className={styles.model}>
+                            <p className={styles.modelLabel}>{t.brain.equation}</p>
+                            <Formula size="md">
+                                {currentConfig.isClassification ? 'Y = σ(W₁·X₁ + W₂·X₂ + b)' : 'Y = W₁·X₁ + W₂·X₂ + b'}
+                            </Formula>
+                            <div className={styles.params}>
+                                <Stat label="W₁" value={model?.w1.toFixed(3)} />
+                                <Stat label="W₂" value={model?.w2.toFixed(3)} />
+                                <Stat label="b" value={model?.b.toFixed(1)} />
                             </div>
-
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                                    <p className="text-slate-400 mb-1 text-[10px] uppercase tracking-wider">W₁</p>
-                                    <p className="font-mono text-sm">{model?.w1.toFixed(3)}</p>
-                                </div>
-                                <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                                    <p className="text-slate-400 mb-1 text-[10px] uppercase tracking-wider">W₂</p>
-                                    <p className="font-mono text-sm">{model?.w2.toFixed(3)}</p>
-                                </div>
-                                <div className="p-2 bg-white/5 rounded-xl border border-white/10 text-center">
-                                    <p className="text-slate-400 mb-1 text-[10px] uppercase tracking-wider">b</p>
-                                    <p className="font-mono text-sm">{model?.b.toFixed(1)}</p>
-                                </div>
-                            </div>
-
-                            <div className="mt-4 p-4 bg-emerald-500/20 rounded-xl border border-emerald-500/30">
-                                <p className="text-emerald-200 mb-1 text-xs uppercase tracking-wider">{t.brain.result}</p>
-                                <div className="flex flex-col gap-1">
-                                    <span className="font-mono text-emerald-400 text-2xl font-bold text-center">
-                                        {loading ? '...' : currentConfig.formatY(predY)}
-                                    </span>
-                                </div>
-                            </div>
+                            <Stat
+                                size="lg"
+                                tone="green"
+                                label={t.brain.result}
+                                value={loading ? '…' : currentConfig.formatY(predY)}
+                            />
                         </div>
-                    </div>
-
+                    </Card>
                 </div>
 
-                <div className="lg:col-span-2 flex flex-col min-h-0 h-full">
+                <div className={styles.main}>
                     {loading ? (
-                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-slate-100 shadow-xl">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-                            <p className="text-slate-600 font-medium">{t.loading(currentConfig.title)}</p>
-                            <p className="text-slate-400 text-xs mt-2">{t.loadingHint}</p>
-                        </div>
+                        <Card padding="md" fill>
+                            <Status kind="loading" fill title={t.loading(currentConfig.title)}>
+                                {t.loadingHint}
+                            </Status>
+                        </Card>
                     ) : model ? (
                         <InferencePlot3D model={model} inputX1={inputX1} inputX2={inputX2} predY={predY} config={currentConfig} />
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center bg-white rounded-2xl border border-red-100 shadow-xl text-red-500">
-                            <p className="font-bold">{t.error}</p>
-                            <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold">{t.retry}</button>
-                        </div>
+                        <Card padding="md" fill>
+                            <Status
+                                kind="error"
+                                fill
+                                title={t.error}
+                                action={
+                                    <Button variant="secondary" icon="reset" onClick={() => window.location.reload()}>
+                                        {t.retry}
+                                    </Button>
+                                }
+                            />
+                        </Card>
                     )}
                 </div>
             </div>
-        </div>
+
+            <div className={styles.next}>
+                <NextStep from="inference" />
+            </div>
+        </Page>
     );
 };
 

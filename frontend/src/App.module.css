@@ -1,0 +1,84 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.main {
+  position: relative;
+  min-width: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  background:
+    radial-gradient(900px 500px at 0% -10%, color-mix(in srgb, var(--accent-indigo) 6%, transparent), transparent 70%),
+    radial-gradient(700px 500px at 110% 110%, color-mix(in srgb, var(--accent-cyan) 6%, transparent), transparent 70%),
+    var(--surface-page);
+  background-attachment: local;
+}
+
+/* Mobile-only chrome */
+.topbar,
+.backdrop {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: var(--topbar-height) minmax(0, 1fr);
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0 var(--space-3);
+    border-bottom: 1px solid var(--border-subtle);
+    background: color-mix(in srgb, var(--surface-card) 85%, transparent);
+    backdrop-filter: blur(12px);
+    z-index: 20;
+  }
+
+  .menuButton {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+  }
+
+  .menuButton:hover {
+    background: var(--surface-sunken);
+    color: var(--text-primary);
+  }
+
+  .topbarTitle {
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: var(--surface-overlay);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-base) ease;
+  }
+
+  .backdrop[data-open] {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}

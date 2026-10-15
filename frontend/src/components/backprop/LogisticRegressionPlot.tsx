@@ -1,6 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { useT } from '../../i18n';
+import PlotPanel, { Readout } from './PlotPanel';
+import { AXIS_LABEL, EQUATION } from './chartStyles';
 
 import type { PlotData, Step } from './types';
 
@@ -50,7 +52,7 @@ const LogisticRegressionPlot: React.FC<LogisticRegressionPlotProps> = ({ data, c
             .attr("cx", d => x(d.x ?? 0))
             .attr("cy", d => y(d.y ?? 0))
             .attr("r", 4)
-            .attr("fill", d => d.y === 1 ? "#6366f1" : "#ef4444")
+            .style("fill", d => d.y === 1 ? "var(--accent-indigo)" : "var(--accent-red)")
             .attr("opacity", 0.6);
 
         // Logistic curve (sigmoid)
@@ -75,7 +77,7 @@ const LogisticRegressionPlot: React.FC<LogisticRegressionPlotProps> = ({ data, c
         g.append("path")
             .datum(lineData)
             .attr("fill", "none")
-            .attr("stroke", "#10b981") // Green color for sigmoid
+            .style("stroke", "var(--accent-green)")
             .attr("stroke-width", 3)
             .attr("d", line);
 
@@ -84,6 +86,7 @@ const LogisticRegressionPlot: React.FC<LogisticRegressionPlotProps> = ({ data, c
             .attr("x", width / 2)
             .attr("y", height + 35)
             .attr("text-anchor", "middle")
+            .attr("class", AXIS_LABEL)
             .text(t.xLabel);
 
         g.append("text")
@@ -91,24 +94,26 @@ const LogisticRegressionPlot: React.FC<LogisticRegressionPlotProps> = ({ data, c
             .attr("y", -30)
             .attr("x", -height / 2)
             .attr("text-anchor", "middle")
+            .attr("class", AXIS_LABEL)
             .text(t.yLabel);
 
     }, [data, currentStep, t]);
 
     return (
-        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <h3 className="text-base font-bold mb-1 text-slate-800 shrink-0">{t.title}</h3>
-            <div className="flex-1 min-h-0 w-full relative flex items-center justify-center">
-                <svg ref={svgRef} viewBox="0 0 500 400" className="w-full h-full max-h-[100%]"></svg>
-            </div>
-            <div className="mt-1 text-xs text-slate-500 flex justify-between shrink-0 bg-slate-50 p-2 rounded-lg border border-slate-100">
-                <span className="font-bold">{t.iteration} <span className="font-mono text-indigo-600">{currentStep?.iteration}</span></span>
-                <span className="font-bold">{t.logLoss} <span className="font-mono text-rose-500">{currentStep?.cost.toFixed(4)}</span></span>
-            </div>
-            <div className="mt-1 text-xs font-mono text-indigo-600 font-bold text-center bg-indigo-50 p-1.5 rounded-lg shrink-0">
-                P(y=1|x) = σ({currentStep?.w.toFixed(2)}x {currentStep && currentStep.b >= 0 ? '+' : ''} {currentStep?.b.toFixed(2)})
-            </div>
-        </div>
+        <PlotPanel
+            title={t.title}
+            footer={
+                <>
+                    <Readout label={t.iteration} value={currentStep?.iteration} />
+                    <Readout label={t.logLoss} value={currentStep?.cost.toFixed(4)} tone="red" />
+                    <code className={EQUATION}>
+                        P(y=1|x) = σ({currentStep?.w.toFixed(2)}x {currentStep && currentStep.b >= 0 ? '+' : ''} {currentStep?.b.toFixed(2)})
+                    </code>
+                </>
+            }
+        >
+            <svg ref={svgRef} viewBox="0 0 500 400"></svg>
+        </PlotPanel>
     );
 };
 

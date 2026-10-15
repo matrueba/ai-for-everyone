@@ -5,7 +5,14 @@ import { forward } from "../components/nn/network";
 import type { SelectedNeuron } from "../components/nn/network";
 import NetworkGraph from "../components/nn/NetworkGraph";
 import DataCanvas from "../components/nn/DataCanvas";
+import { Page, PageHeader } from "../components/ui/Page";
+import { Card, CardHeader } from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import Icon from "../components/ui/Icon";
+import { Callout, Slider, Status } from "../components/ui/Bits";
+import NextStep from "../components/ui/NextStep";
 import { useT } from "../i18n";
+import styles from "./NeuralNetwork.module.css";
 
 const NeuralNetwork: React.FC = () => {
     const t = useT("neuralnet");
@@ -50,14 +57,14 @@ const NeuralNetwork: React.FC = () => {
     const renderInspector = () => {
         if (!net || !fp || selected === null) return null;
 
-        const mono = "font-mono text-[0.8rem] text-slate-700 bg-slate-50 rounded-lg p-4 overflow-x-auto whitespace-nowrap";
+        const mono = styles.math;
 
         if (selected.layer === "input") {
             const v = fp.input[selected.index as 0 | 1] ?? 0;
             return (
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-2">{t.inspector.inputTitle(selected.index + 1)}</h4>
-                    <p className="text-sm text-slate-600 mb-3">
+                    <h4 className={styles.inspectorTitle}>{t.inspector.inputTitle(selected.index + 1)}</h4>
+                    <p className={styles.inspectorBody}>
                         {t.inspector.inputBody}
                     </p>
                     <div className={mono}>{t.inspector.inputValue} = {v.toFixed(2)}</div>
@@ -74,11 +81,11 @@ const NeuralNetwork: React.FC = () => {
             const a = fp.hiddenA[j] ?? 0;
             return (
                 <div>
-                    <h4 className="font-bold text-slate-900 mb-2">{t.inspector.hiddenTitle(j + 1)}</h4>
-                    <p className="text-sm text-slate-600 mb-3">
+                    <h4 className={styles.inspectorTitle}>{t.inspector.hiddenTitle(j + 1)}</h4>
+                    <p className={styles.inspectorBody}>
                         {t.inspector.hiddenBody}
                         {a === 0 && (
-                            <span className="text-orange-600 font-semibold">{t.inspector.hiddenInactive}</span>
+                            <strong className="tone-orange">{t.inspector.hiddenInactive}</strong>
                         )}
                     </p>
                     <div className={mono}>
@@ -93,8 +100,8 @@ const NeuralNetwork: React.FC = () => {
         const terms = net.W2.map((w, j) => `(${w.toFixed(2)})·(${(fp.hiddenA[j] ?? 0).toFixed(2)})`).join(" + ");
         return (
             <div>
-                <h4 className="font-bold text-slate-900 mb-2">{t.inspector.outputTitle}</h4>
-                <p className="text-sm text-slate-600 mb-3">
+                <h4 className={styles.inspectorTitle}>{t.inspector.outputTitle}</h4>
+                <p className={styles.inspectorBody}>
                     {t.inspector.outputBody}
                 </p>
                 <div className={mono}>
@@ -106,48 +113,30 @@ const NeuralNetwork: React.FC = () => {
         );
     };
 
+    const inside = fp ? fp.outputA >= 0.5 : true;
+
     return (
-        <div className="h-full bg-slate-50 flex flex-col overflow-y-auto custom-scrollbar pb-12">
-            {/* Header */}
-            <header className="flex flex-row items-center gap-6 overflow-hidden shrink-0 p-6">
-                <h1 className="text-[clamp(1.5rem,5vw,3rem)] font-extrabold text-slate-900 tracking-tighter shrink-0">
-                    {t.header.title}
-                </h1>
-                <div className="h-8 w-px bg-slate-200 shrink-0 hidden md:block"></div>
-                <p className="text-[clamp(0.75rem,1.5vw,1.1rem)] text-slate-400 font-medium italic leading-tight max-w-[50%]">
-                    {t.header.subtitle}
-                </p>
-            </header>
+        <Page width="wide">
+            <PageHeader page="neural-network" title={t.header.title} subtitle={t.header.subtitle} />
 
             {hasError && (
-                <div className="mx-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium">
-                    {t.connectionError}
-                </div>
+                <Card padding="md">
+                    <Status kind="error" title={t.connectionError} />
+                </Card>
             )}
 
-            {!net && !hasError && (
-                <div className="flex-1 flex items-center justify-center text-slate-400 text-sm gap-3">
-                    <div className="w-5 h-5 border-2 border-slate-300 border-t-indigo-600 rounded-full animate-spin" />
-                    {t.training}
-                </div>
-            )}
+            {!net && !hasError && <Status kind="loading" title={t.training} />}
 
             {net && fp && (
-                <div className="px-6 space-y-6">
-                    {/* Problem explanation */}
-                    <section className="card-elevated p-6">
-                        <p className="text-sm text-slate-600 leading-relaxed max-w-4xl">
-                            {t.problem(net.b1.length)}
-                        </p>
-                    </section>
+                <div className={styles.content}>
+                    <Callout icon="info">
+                        <p>{t.problem(net.b1.length)}</p>
+                    </Callout>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                        {/* Input panel */}
-                        <div className="space-y-6">
-                            <section className="card-elevated p-6">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">
-                                    {t.inputSpace}
-                                </h3>
+                    <div className={styles.layout}>
+                        <div className={styles.side}>
+                            <Card padding="md">
+                                <CardHeader compact title={t.inputSpace} icon="target" tone="cyan" />
                                 <DataCanvas
                                     net={net}
                                     x1={x1}
@@ -157,72 +146,46 @@ const NeuralNetwork: React.FC = () => {
                                         setX2(nx2);
                                     }}
                                 />
-                                <div className="mt-5 space-y-4">
-                                    {[
-                                        { label: "x₁", value: x1, set: setX1 },
-                                        { label: "x₂", value: x2, set: setX2 },
-                                    ].map(({ label, value, set }) => (
-                                        <div key={label}>
-                                            <div className="flex justify-between text-xs font-semibold text-slate-600 mb-1">
-                                                <span>{label}</span>
-                                                <span className="font-mono text-indigo-600">{value.toFixed(2)}</span>
-                                            </div>
-                                            <input
-                                                type="range"
-                                                min={-3}
-                                                max={3}
-                                                step={0.05}
-                                                value={value}
-                                                onChange={(e) => set(parseFloat(e.target.value))}
-                                                className="w-full accent-indigo-600"
-                                            />
-                                        </div>
-                                    ))}
+                                <div className={styles.sliders}>
+                                    <Slider label="x₁" valueLabel={x1.toFixed(2)} min={-3} max={3} step={0.05} value={x1} onChange={setX1} />
+                                    <Slider label="x₂" valueLabel={x2.toFixed(2)} min={-3} max={3} step={0.05} value={x2} onChange={setX2} />
                                 </div>
-                            </section>
+                            </Card>
 
-                            {/* Prediction */}
-                            <section className="card-elevated p-6">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">{t.prediction.heading}</h3>
-                                <div className="flex items-baseline gap-3">
-                                    <span
-                                        className={`text-4xl font-extrabold font-mono ${fp.outputA >= 0.5 ? "text-indigo-600" : "text-orange-600"}`}
-                                    >
-                                        {(fp.outputA * 100).toFixed(1)}%
-                                    </span>
-                                    <span className="text-sm text-slate-500">{t.prediction.probabilityInside}</span>
+                            <Card padding="md">
+                                <CardHeader compact title={t.prediction.heading} icon="sparkles" tone={inside ? "indigo" : "orange"} />
+                                <div className={styles.prediction} data-tone={inside ? "indigo" : "orange"}>
+                                    <span className={styles.probability}>{(fp.outputA * 100).toFixed(1)}%</span>
+                                    <span className={styles.probabilityLabel}>{t.prediction.probabilityInside}</span>
                                 </div>
-                                <div className="mt-3 h-2.5 rounded-full bg-slate-100 overflow-hidden">
-                                    <div
-                                        className={`h-full rounded-full transition-all duration-300 ${fp.outputA >= 0.5 ? "bg-indigo-600" : "bg-orange-600"}`}
-                                        style={{ width: `${fp.outputA * 100}%` }}
-                                    />
+                                <div className={styles.meter} data-tone={inside ? "indigo" : "orange"}>
+                                    <div className={styles.meterFill} style={{ width: `${fp.outputA * 100}%` }} />
                                 </div>
-                                <p className="mt-3 text-xs text-slate-500">
+                                <p className={styles.predictionMeta}>
                                     {t.prediction.activeNeurons}{" "}
-                                    <strong className="text-slate-700 font-mono">
+                                    <strong>
                                         {fp.hiddenA.filter((a) => a > 0).length} / {fp.hiddenA.length}
                                     </strong>
-                                    {" · "}{t.prediction.accuracy} <strong className="text-slate-700 font-mono">{(net.accuracy * 100).toFixed(0)}%</strong>
+                                    {" · "}{t.prediction.accuracy} <strong>{(net.accuracy * 100).toFixed(0)}%</strong>
                                 </p>
-                            </section>
+                            </Card>
                         </div>
 
-                        {/* Network graph */}
-                        <section className="card-elevated p-6 lg:col-span-2">
-                            <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                                <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">{t.graph.heading}</h3>
-                                <button
-                                    onClick={startAnimation}
-                                    disabled={animStep !== null}
-                                    className="px-5 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                                >
-                                    {t.graph.propagate}
-                                </button>
-                            </div>
+                        <Card padding="md" className={styles.graphCard}>
+                            <CardHeader
+                                compact
+                                title={t.graph.heading}
+                                icon="network"
+                                actions={
+                                    <Button icon="play" onClick={startAnimation} disabled={animStep !== null}>
+                                        {t.graph.propagate}
+                                    </Button>
+                                }
+                            />
 
                             {animStep !== null && (
-                                <div className="mb-3 p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-800 text-sm font-medium animate-fade-in-up">
+                                <div className={`${styles.stepCaption} animate-in`} key={animStep}>
+                                    <span className={styles.stepNumber}>{animStep}/5</span>
                                     {t.steps[animStep as 1 | 2 | 3 | 4 | 5]}
                                 </div>
                             )}
@@ -230,43 +193,39 @@ const NeuralNetwork: React.FC = () => {
                             <NetworkGraph net={net} fp={fp} animStep={animStep} selected={selected} onSelect={setSelected} />
 
                             {selected !== null && (
-                                <div className="mt-4 p-5 rounded-xl border border-cyan-200 bg-cyan-50/50 animate-fade-in-up">
-                                    {renderInspector()}
-                                </div>
+                                <div className={`${styles.inspector} animate-in`}>{renderInspector()}</div>
                             )}
-                        </section>
+                        </Card>
                     </div>
 
-                    {/* Theory */}
-                    <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="card-elevated p-6">
-                            <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">⚖️</span> {t.theory.weighted.title}
+                    <section className={styles.theory}>
+                        <Card padding="md">
+                            <h4 className={styles.theoryTitle}>
+                                <span className={styles.theoryIcon} data-tone="indigo"><Icon name="scale" size={18} /></span>
+                                {t.theory.weighted.title}
                             </h4>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                                {t.theory.weighted.body}
-                            </p>
-                        </div>
-                        <div className="card-elevated p-6">
-                            <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">⚡</span> {t.theory.relu.title}
+                            <p className="prose prose-sm">{t.theory.weighted.body}</p>
+                        </Card>
+                        <Card padding="md">
+                            <h4 className={styles.theoryTitle}>
+                                <span className={styles.theoryIcon} data-tone="orange"><Icon name="zap" size={18} /></span>
+                                {t.theory.relu.title}
                             </h4>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                                {t.theory.relu.body}
-                            </p>
-                        </div>
-                        <div className="card-elevated p-6">
-                            <h4 className="font-bold text-slate-900 mb-2 flex items-center gap-2">
-                                <span className="text-xl">🧩</span> {t.theory.concepts.title}
+                            <p className="prose prose-sm">{t.theory.relu.body}</p>
+                        </Card>
+                        <Card padding="md">
+                            <h4 className={styles.theoryTitle}>
+                                <span className={styles.theoryIcon} data-tone="cyan"><Icon name="layers" size={18} /></span>
+                                {t.theory.concepts.title}
                             </h4>
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                                {t.theory.concepts.body}
-                            </p>
-                        </div>
+                            <p className="prose prose-sm">{t.theory.concepts.body}</p>
+                        </Card>
                     </section>
+
+                    <NextStep from="neural-network" />
                 </div>
             )}
-        </div>
+        </Page>
     );
 };
 

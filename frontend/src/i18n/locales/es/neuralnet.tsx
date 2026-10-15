@@ -12,8 +12,8 @@ export const neuralnet = {
     problem: (hiddenSize: number) => (
         <>
             Esta red neuronal (2 entradas → {hiddenSize} neuronas ocultas → 1 salida) ha sido entrenada para resolver un
-            problema sencillo: decidir si un punto <span className="font-mono">(x₁, x₂)</span> está{" "}
-            <strong className="text-indigo-600">dentro</strong> o <strong className="text-orange-600">fuera</strong> de
+            problema sencillo: decidir si un punto <span className="mono">(x₁, x₂)</span> está{" "}
+            <strong className="tone-indigo">dentro</strong> o <strong className="tone-orange">fuera</strong> de
             un círculo. Un modelo lineal no puede resolverlo, pero una sola capa oculta sí.{" "}
             <strong>Arrastra el punto</strong> sobre el mapa (o usa los deslizadores) y observa qué neuronas se
             encienden y qué señal fluye por cada conexión.
@@ -31,7 +31,7 @@ export const neuralnet = {
 
     graph: {
         heading: "La red por dentro",
-        propagate: "▶ Propagar señal paso a paso",
+        propagate: "Propagar señal paso a paso",
         ariaLabel: "Grafo de la red neuronal",
         layers: {
             input: "Entrada",
@@ -71,7 +71,7 @@ export const neuralnet = {
         hiddenBody: (
             <>
                 Primero calcula la <strong>suma ponderada</strong> de sus entradas más el sesgo, y después aplica la
-                función de activación <strong>ReLU</strong>: <span className="font-mono">max(0, z)</span>.
+                función de activación <strong>ReLU</strong>: <span className="mono">max(0, z)</span>.
             </>
         ),
         hiddenInactive: " Como z es negativo, esta neurona no se activa (salida 0).",
@@ -100,7 +100,7 @@ export const neuralnet = {
             title: "Activación ReLU",
             body: (
                 <>
-                    La función <span className="font-mono">ReLU(z) = max(0, z)</span> decide si la neurona «se
+                    La función <span className="mono">ReLU(z) = max(0, z)</span> decide si la neurona «se
                     enciende». Si la suma ponderada es negativa, la neurona queda <strong>inactiva</strong> y no aporta
                     nada. Esta no-linealidad es lo que permite a la red aprender fronteras curvas como el círculo.
                 </>

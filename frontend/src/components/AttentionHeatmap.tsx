@@ -51,13 +51,13 @@ const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }
       .append("div")
       .style("position", "absolute")
       .style("z-index", "1000")
-      .style("background", "#ffffff")
-      .style("border", "1px solid rgba(15,23,42,0.1)")
+      .style("background", "var(--surface-raised)")
+      .style("border", "1px solid var(--border-default)")
       .style("border-radius", "6px")
       .style("padding", "4px 8px")
       .style("font-size", "11px")
       .style("font-family", "'JetBrains Mono', monospace")
-      .style("color", "#0f172a")
+      .style("color", "var(--text-primary)")
       .style("pointer-events", "none")
       .style("opacity", 0);
 
@@ -77,11 +77,11 @@ const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }
           .style("cursor", "crosshair")
           .style("transition", "stroke 0.15s")
           .on("mouseenter", function (this: SVGRectElement, event: MouseEvent) {
-            d3.select(this).attr("stroke", "#0f172a");
+            d3.select(this).style("stroke", "var(--text-primary)");
             tooltip
               .style("opacity", 1)
               .html(
-                `<span style="color:#64748b">${leftText[i]}</span> → <span style="color:#0891b2">${rightText[j]}</span><br/><strong>${w.toFixed(4)}</strong>`
+                `<span style="color:var(--text-tertiary)">${leftText[i]}</span> → <span style="color:var(--accent-cyan)">${rightText[j]}</span><br/><strong>${w.toFixed(4)}</strong>`
               )
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
@@ -92,7 +92,7 @@ const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }
               .style("top", event.offsetY - 10 + "px");
           })
           .on("mouseleave", function (this: SVGRectElement) {
-            d3.select(this).attr("stroke", "transparent");
+            d3.select(this).style("stroke", "transparent");
             tooltip.style("opacity", 0);
           });
       });
@@ -107,7 +107,7 @@ const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }
         .attr("y", labelPad + i * cellSize + cellSize / 2 + 1)
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 11);
     });
 
@@ -120,7 +120,7 @@ const AttentionHeatmap: React.FC<AttentionHeatmapProps> = ({ data, layer, head }
         .attr("y", 0)
         .attr("text-anchor", "start")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 11)
         .attr(
           "transform",

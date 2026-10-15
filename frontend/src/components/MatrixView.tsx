@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import * as d3 from "d3";
+import Tabs from "./ui/Tabs";
+import { Status } from "./ui/Bits";
 import { useT } from "../i18n";
+import styles from "./MatrixView.module.css";
 
 interface MatrixData {
   left_text: string[];
@@ -24,7 +27,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
   const kRef = useRef<HTMLDivElement>(null);
   const qkRef = useRef<HTMLDivElement>(null);
   const [selectedToken, setSelectedToken] = useState<number | null>(null);
-  const [matrixTab, setMatrixTab] = useState<string>("vectors"); // "vectors" | "product"
+  const [matrixTab, setMatrixTab] = useState<"vectors" | "product">("vectors");
 
   const tokens = data?.left_text || [];
   const queries = data?.queries?.[layer]?.[head]; // [nTokens][d_k]
@@ -59,13 +62,13 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
   // ── Render Q matrix ──
   useEffect(() => {
     if (!queries || !qRef.current) return;
-    renderVectorMatrix(qRef.current, queries, tokens, "Q", "#4f46e5");
+    renderVectorMatrix(qRef.current, queries, tokens, "Q", "var(--accent-indigo)");
   }, [queries, tokens, t]);
 
   // ── Render K matrix ──
   useEffect(() => {
     if (!keys || !kRef.current) return;
-    renderVectorMatrix(kRef.current, keys, tokens, "K", "#0891b2");
+    renderVectorMatrix(kRef.current, keys, tokens, "K", "var(--accent-cyan)");
   }, [keys, tokens, t]);
 
   // ── Render Q×K matrix ──
@@ -104,7 +107,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
       .attr("text-anchor", "middle")
       .attr("font-size", 13)
       .attr("font-weight", 600)
-      .attr("fill", accentColor);
+      .style("fill", accentColor);
 
     // Find global min/max for color scale
     const flat = vectors.flatMap(v => v.slice(0, maxDims));
@@ -137,7 +140,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
         .attr("y", titleH + i * cellH + cellH / 2 + 1)
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 11);
     });
   }
@@ -167,7 +170,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
       .attr("text-anchor", "middle")
       .attr("font-size", 13)
       .attr("font-weight", 600)
-      .attr("fill", "#7c3aed");
+      .style("fill", "var(--accent-purple)");
 
     const flat = matrix.flat();
     const ext = d3.extent(flat) as [number, number];
@@ -180,15 +183,15 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
       .append("div")
       .style("position", "absolute")
       .style("z-index", "1000")
-      .style("background", "#ffffff")
-      .style("border", "1px solid rgba(15,23,42,0.1)")
+      .style("background", "var(--surface-raised)")
+      .style("border", "1px solid var(--border-default)")
       .style("border-radius", "6px")
       .style("padding", "5px 9px")
       .style("font-size", "11px")
       .style("font-family", "'JetBrains Mono', monospace")
-      .style("color", "#0f172a")
+      .style("color", "var(--text-primary)")
       .style("pointer-events", "none")
-      .style("box-shadow", "0 2px 8px rgba(0,0,0,0.08)")
+      .style("box-shadow", "var(--shadow-md)")
       .style("opacity", 0);
 
     // Cells
@@ -201,16 +204,16 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
           .attr("height", cellSize - 1)
           .attr("rx", 3)
           .attr("fill", colorScale(val) as string)
-          .attr("stroke", highlightRow === i ? "#7c3aed" : "transparent")
+          .style("stroke", highlightRow === i ? "var(--accent-purple)" : "transparent")
           .attr("stroke-width", highlightRow === i ? 2 : 0)
           .style("cursor", "crosshair")
           .style("transition", "stroke 0.1s")
           .on("mouseenter", function (this: SVGRectElement, event: MouseEvent) {
-            d3.select(this).attr("stroke", "#0f172a");
+            d3.select(this).style("stroke", "var(--text-primary)");
             tooltip
               .style("opacity", 1)
               .html(
-                `<span style="color:#64748b">q</span><sub>${i}</sub> · <span style="color:#64748b">k</span><sub>${j}</sub> = <strong>${val.toFixed(3)}</strong>`
+                `<span style="color:var(--text-tertiary)">q</span><sub>${i}</sub> · <span style="color:var(--text-tertiary)">k</span><sub>${j}</sub> = <strong>${val.toFixed(3)}</strong>`
               )
               .style("left", event.offsetX + 14 + "px")
               .style("top", event.offsetY - 10 + "px");
@@ -221,7 +224,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
               .style("top", event.offsetY - 10 + "px");
           })
           .on("mouseleave", function (this: SVGRectElement) {
-            d3.select(this).attr("stroke", highlightRow === i ? "#7c3aed" : "transparent");
+            d3.select(this).style("stroke", highlightRow === i ? "var(--accent-purple)" : "transparent");
             tooltip.style("opacity", 0);
           })
           .on("click", () => {
@@ -238,7 +241,7 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
         .attr("y", titleH + labelPad + i * cellSize + cellSize / 2)
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
-        .attr("fill", highlightRow === i ? "#7c3aed" : "#334155")
+        .style("fill", highlightRow === i ? "var(--accent-purple)" : "var(--text-secondary)")
         .attr("font-size", 11)
         .attr("font-weight", highlightRow === i ? 600 : 400);
     });
@@ -251,55 +254,47 @@ const MatrixView: React.FC<MatrixViewProps> = ({ data, layer, head }) => {
         .attr("y", 0)
         .attr("text-anchor", "start")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#334155")
+        .style("fill", "var(--text-secondary)")
         .attr("font-size", 11)
         .attr("transform", `translate(${labelPad + j * cellSize + cellSize / 2}, ${titleH + labelPad - 8}) rotate(-45)`);
     });
   }
 
   if (!queries && !keys) {
-    return (
-      <div className="text-center py-12 text-text-tertiary text-sm">
-        {t.noData}
-      </div>
-    );
+    return <Status kind="empty">{t.noData}</Status>;
   }
 
   return (
-    <div className="w-full flex flex-col items-center">
-      <div className="flex bg-surface-card border border-border-default rounded-md overflow-hidden mb-6">
-        <button
-          onClick={() => setMatrixTab("vectors")}
-          className={`px-4 py-2 text-xs font-medium cursor-pointer transition-colors ${matrixTab === "vectors" ? "bg-accent-indigo/10 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
-        >
-          {t.tabVectors}
-        </button>
-        <button
-          onClick={() => setMatrixTab("product")}
-          className={`px-4 py-2 text-xs font-medium cursor-pointer transition-colors border-l border-border-default ${matrixTab === "product" ? "bg-accent-indigo/10 text-accent-indigo" : "text-text-secondary hover:text-text-primary"}`}
-        >
-          {t.tabProduct}
-        </button>
-      </div>
+    <div className={styles.matrix}>
+      <Tabs
+        label={t.tabVectors}
+        size="sm"
+        value={matrixTab}
+        onChange={setMatrixTab}
+        items={[
+          { id: "vectors", label: t.tabVectors },
+          { id: "product", label: t.tabProduct },
+        ]}
+      />
 
       {matrixTab === "vectors" && (
-        <div className="flex flex-wrap gap-8 justify-center animate-fade-in-up">
-          <div className="overflow-x-auto">
+        <div className={`${styles.vectors} animate-in`}>
+          <div className={styles.scroll}>
             <div ref={qRef} />
           </div>
-          <div className="overflow-x-auto">
+          <div className={styles.scroll}>
             <div ref={kRef} />
           </div>
         </div>
       )}
 
       {matrixTab === "product" && qkMatrix && (
-        <div className="flex flex-col items-center gap-4 animate-fade-in-up">
-          <div className="overflow-x-auto flex justify-center">
+        <div className={`${styles.product} animate-in`}>
+          <div className={styles.scroll}>
             <div ref={qkRef} style={{ position: "relative" }} />
           </div>
           {selectedToken !== null && (
-            <p className="text-center text-xs text-text-tertiary font-mono">
+            <p className={styles.selected}>
               {t.selectedToken(tokens[selectedToken] ?? "", selectedToken)}
             </p>
           )}

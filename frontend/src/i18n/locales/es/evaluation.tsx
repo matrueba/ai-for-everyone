@@ -1,5 +1,4 @@
 export const evaluation = {
-    badge: "Fase 4",
     title: "Evaluación",
     subtitle:
         "Explora la evaluación del modelo mediante métricas interactivas y visualizaciones de pérdida en tiempo real.",

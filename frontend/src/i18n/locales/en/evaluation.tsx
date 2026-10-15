@@ -1,7 +1,6 @@
 import type { Dict } from "../../dict";
 
 export const evaluation: Dict["evaluation"] = {
-    badge: "Phase 4",
     title: "Evaluation",
     subtitle: "Explore model evaluation through interactive metrics and real-time loss visualizations.",
 

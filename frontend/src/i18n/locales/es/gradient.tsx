@@ -182,23 +182,23 @@ export const gradient = {
         legend: {
             y: (
                 <>
-                    <span className="font-bold text-slate-800">y:</span> Predicción del modelo (precio estimado).
+                    <strong>y:</strong> Predicción del modelo (precio estimado).
                 </>
             ),
             x: (
                 <>
-                    <span className="font-bold text-slate-800">X₁ / X₂:</span> Variables de entrada (m² y nota).
+                    <strong>X₁ / X₂:</strong> Variables de entrada.
                 </>
             ),
             w: (
                 <>
-                    <span className="font-bold text-slate-800">W₁ / W₂:</span> Parámetros o importancia de cada
+                    <strong>W₁ / W₂:</strong> Parámetros o importancia de cada
                     característica.
                 </>
             ),
             b: (
                 <>
-                    <span className="font-bold text-slate-800">b:</span> Parámetro de ajuste base o sesgo (Bias).
+                    <strong>b:</strong> Parámetro de ajuste base o sesgo (Bias).
                 </>
             ),
         },
@@ -273,29 +273,29 @@ export const gradient = {
         legend: {
             y: (
                 <>
-                    <span className="font-bold text-slate-800">y:</span> Probabilidad predicha (entre 0 y 1) de
+                    <strong>y:</strong> Probabilidad predicha (entre 0 y 1) de
                     admisión.
                 </>
             ),
             z: (
                 <>
-                    <span className="font-bold text-slate-800">z:</span> Combinación lineal de las características.
+                    <strong>z:</strong> Combinación lineal de las características.
                 </>
             ),
             x: (
                 <>
-                    <span className="font-bold text-slate-800">X₁ / X₂:</span> Variables de entrada (horas y examen).
+                    <strong>X₁ / X₂:</strong> Variables de entrada (horas y examen).
                 </>
             ),
             w: (
                 <>
-                    <span className="font-bold text-slate-800">W₁ / W₂ / b:</span> Pesos y sesgo que determinan la
+                    <strong>W₁ / W₂ / b:</strong> Pesos y sesgo que determinan la
                     frontera de decisión.
                 </>
             ),
             sigma: (
                 <>
-                    <span className="font-bold text-slate-800">σ():</span> Función sigmoide.
+                    <strong>σ():</strong> Función sigmoide.
                 </>
             ),
         },

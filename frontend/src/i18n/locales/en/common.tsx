@@ -14,9 +14,39 @@ export const common: Dict["common"] = {
         visualizer: "Attention Visualizer",
     },
 
+    nav: {
+        label: "Main navigation",
+        groups: {
+            fundamentals: "Fundamentals",
+            networks: "Neural networks & LLMs",
+        },
+        openMenu: "Open menu",
+        closeMenu: "Close menu",
+        next: "Next step",
+    },
+
     sidebar: {
         status: "Status",
         backendOnline: "Backend online",
+        backendOffline: "Backend unavailable",
+        backendChecking: "Checking backend…",
+    },
+
+    chart3d: {
+        resetView: "Reset view",
+        dragHint: "Drag to rotate · scroll to zoom",
+        costLow: "low cost",
+        costHigh: "high cost",
+        start: "Start",
+        nextStep: "Next step (−∇)",
+        residuals: "Errors (residuals)",
+        boundary: "Boundary p = 0.5",
+    },
+
+    theme: {
+        label: "Theme",
+        light: "Light",
+        dark: "Dark",
     },
 
     language: {

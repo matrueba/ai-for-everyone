@@ -9,7 +9,7 @@ export const history: Dict["history"] = {
     prevSlide: "Previous slide",
     nextSlide: "Next slide",
     keyboardTip: {
-        prefix: "💡 Tip: you can use the arrow keys",
+        prefix: "Tip: you can use the arrow keys",
         middle: "and",
         suffix: "to navigate.",
     },

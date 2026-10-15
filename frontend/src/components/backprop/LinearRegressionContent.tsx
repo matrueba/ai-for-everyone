@@ -3,7 +3,12 @@ import RegressionPlot from './RegressionPlot';
 import CostSurface from './CostSurface';
 import Backprop3D from './Backprop3D';
 import RegressionPlot3D from './RegressionPlot3D';
+import TrainingControls from './TrainingControls';
+import { Card } from '../ui/Card';
+import Tabs from '../ui/Tabs';
+import { Callout, Formula, Status } from '../ui/Bits';
 import { useT } from '../../i18n';
+import styles from './Playground.module.css';
 
 import type { Step, SurfaceData } from './types';
 
@@ -55,7 +60,6 @@ const gradient_descent_data = (vizMode: '2d' | '3d') => {
 const LinearRegressionContent: React.FC = () => {
     const gradient = useT('gradient');
     const t = gradient.linear;
-    const controls = gradient.controls;
     const [data, setData] = useState<FormattedData | null>(null);
     const [data3d, setData3d] = useState<FormattedData | null>(null);
     const [vizMode, setVizMode] = useState<'2d' | '3d'>('2d');
@@ -125,151 +129,92 @@ const LinearRegressionContent: React.FC = () => {
         return () => clearInterval(interval);
     }, [isPlaying, data, data3d, currentIteration, vizMode]);
 
-    if (loading && !data && !data3d) return (
-        <div className="flex flex-col items-center justify-center p-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
-            <p className="text-slate-600 font-medium">{t.loading}</p>
-        </div>
-    );
+    if (loading && !data && !data3d) return <Status kind="loading" title={t.loading} />;
 
     const activeData = vizMode === '2d' ? data : data3d;
     const currentStep = activeData?.steps[currentIteration];
 
     return (
-        <div className="flex flex-col min-h-0">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2 shrink-0">
-                <div className="flex flex-row items-center gap-6 pl-2">
-                    <h2 className="text-2xl font-bold text-slate-800 tracking-tighter shrink-0">
-                        {t.title}
-                    </h2>
-                    <p className="text-slate-500 font-medium italic leading-tight">
-                        {t.subtitle}
-                    </p>
+        <div className="animate-in">
+            <div className={styles.header}>
+                <div>
+                    <h2 className={styles.title}>{t.title}</h2>
+                    <p className={styles.subtitle}>{t.subtitle}</p>
                 </div>
-                <div className="flex bg-slate-200 p-1 rounded-xl border border-slate-200 gap-2">
-                    <button
-                        onClick={() => setVizMode('2d')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '2d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                    >
-                        {t.mode2d}
-                    </button>
-                    <button
-                        onClick={() => setVizMode('3d')}
-                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${vizMode === '3d' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                    >
-                        {t.mode3d}
-                    </button>
-                </div>
+                <Tabs
+                    label={t.title}
+                    value={vizMode}
+                    onChange={setVizMode}
+                    items={[
+                        { id: '2d', label: t.mode2d },
+                        { id: '3d', label: t.mode3d },
+                    ]}
+                />
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 flex-1 min-h-0">
-                <div className="flex flex-col col-span-4 min-h-0">
-                    <div className="card-elevated p-5 space-y-4 flex-1 overflow-y-auto custom-scrollbar min-h-0">
-                        <div className="prose prose-slate max-w-none text-slate-600">
-                            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.heading}</h3>
+            <div className={styles.layout}>
+                <Card padding="md" className={styles.explain}>
+                    <div className="prose">
+                        <h3 className={styles.explainHeading}>{t.heading}</h3>
+                        <p>{t.p1}</p>
 
-                            <p>{t.p1}</p>
+                        <Callout icon="info" title={t.scenario.title}>
+                            <p>{t.scenario.lead}</p>
+                            <ul>
+                                <li>{t.scenario.bullets[1]}</li>
+                                <li>{t.scenario.bullets[2]}</li>
+                            </ul>
+                        </Callout>
 
-                            <div className="bg-indigo-50 p-6 rounded-2xl border border-indigo-100 my-8">
-                                <h4 className="text-indigo-900 font-bold mb-3 flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                                    {t.scenario.title}
-                                </h4>
-                                <p className="text-sm text-indigo-800 leading-relaxed">
-                                    {t.scenario.lead}
-                                </p>
-                                <ul className="text-sm text-indigo-800 mt-2 list-disc ml-5 space-y-1">
-                                    <li>{t.scenario.bullets[1]}</li>
-                                    <li>{t.scenario.bullets[2]}</li>
-                                </ul>
-                            </div>
+                        <p>{t.p2}</p>
 
-                            <p>{t.p2}</p>
+                        <h4 className={styles.subheading}>{t.modelHeading}</h4>
+                        <p>{t.modelLead}</p>
 
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.modelHeading}</h4>
-                            <p>{t.modelLead}</p>
+                        <Formula>y = W₁X₁ + W₂X₂ + b</Formula>
 
-                            <div className="bg-slate-900 p-8 rounded-2xl text-center shadow-inner my-6">
-                                <code className="text-2xl text-indigo-300 font-mono">
-                                    y = W₁X₁ + W₂X₂ + b
-                                </code>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mt-6">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.y}</div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.x}</div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.w}</div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">{t.legend.b}</div>
-                            </div>
-
-                            <h4 className="text-xl font-bold text-slate-900 mt-10 mb-4">{t.realtimeHeading}</h4>
-                            <p>{t.realtimeBody}</p>
-
-                            <div className="bg-rose-50 p-6 rounded-2xl border border-rose-100 mt-8">
-                                <h4 className="text-rose-900 font-bold mb-3">{t.lrBox.title}</h4>
-                                <div className="space-y-4">
-                                    <div>
-                                        <span className="font-bold text-rose-700">{t.lrBox.tooLowLabel}</span>
-                                        <p className="text-sm text-rose-800">{t.lrBox.tooLowBody}</p>
-                                    </div>
-                                    <div>
-                                        <span className="font-bold text-rose-700">{t.lrBox.tooHighLabel}</span>
-                                        <p className="text-sm text-rose-800">{t.lrBox.tooHighBody}</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className={styles.legend}>
+                            <div>{t.legend.y}</div>
+                            <div>{t.legend.x}</div>
+                            <div>{t.legend.w}</div>
+                            <div>{t.legend.b}</div>
                         </div>
+
+                        <h4 className={styles.subheading}>{t.realtimeHeading}</h4>
+                        <p>{t.realtimeBody}</p>
+
+                        <Callout tone="red" icon="alert" title={t.lrBox.title}>
+                            <p>
+                                <span className={styles.lrTerm}>{t.lrBox.tooLowLabel}</span>
+                                {t.lrBox.tooLowBody}
+                            </p>
+                            <p>
+                                <span className={styles.lrTerm}>{t.lrBox.tooHighLabel}</span>
+                                {t.lrBox.tooHighBody}
+                            </p>
+                        </Callout>
                     </div>
-                </div>
+                </Card>
 
-                <div className="xl:col-span-8 flex flex-col min-h-0 space-y-4">
-                    <div className="flex flex-wrap items-center gap-3 card-elevated p-3 shrink-0">
-                        <button
-                            onClick={() => setIsPlaying(!isPlaying)}
-                            className={`flex items-center gap-2 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:scale-105 active:scale-95 ${isPlaying ? 'bg-rose-500 text-white' : 'bg-indigo-600 text-white'}`}
-                        >
-                            {isPlaying ? controls.pause : controls.start}
-                        </button>
-                        <button
-                            onClick={() => {
-                                setCurrentIteration(0);
-                                setIsPlaying(false);
-                            }}
-                            className="px-6 py-3 rounded-xl bg-slate-100 text-slate-600 font-bold hover:bg-slate-200 transition-colors"
-                        >
-                            {controls.reset}
-                        </button>
-                        <div className="flex items-center gap-2 border-l border-slate-200 pl-4 ml-2">
-                            <span className="text-sm font-bold text-slate-500 uppercase tracking-wider">{controls.learningRate}</span>
-                            <input
-                                type="number"
-                                step="0.001"
-                                min="0.001"
-                                max="1"
-                                value={learningRate}
-                                onChange={(e) => setLearningRate(parseFloat(e.target.value))}
-                                className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block py-2 px-3 font-mono w-24"
-                            />
-                        </div>
-                        <div className="flex-1 flex items-center gap-4 min-w-[200px]">
-                            <span className="text-xs font-mono font-bold text-slate-400">0</span>
-                            <input
-                                type="range"
-                                min="0"
-                                max={(activeData?.steps?.length ?? 1) - 1}
-                                value={currentIteration}
-                                onChange={(e) => setCurrentIteration(parseInt(e.target.value))}
-                                className="flex-1 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                            />
-                            <span className="text-xs font-mono font-bold text-slate-400">{(activeData?.steps?.length ?? 1) - 1}</span>
-                        </div>
-                        <div className="px-4 py-2 bg-indigo-50 rounded-lg">
-                            <span className="text-xs text-indigo-400 uppercase font-bold block">{controls.iteration}</span>
-                            <span className="text-xl font-mono font-bold text-indigo-700">{currentIteration}</span>
-                        </div>
-                    </div>
+                <div className={styles.work}>
+                    <TrainingControls
+                        isPlaying={isPlaying}
+                        onTogglePlay={() => setIsPlaying(!isPlaying)}
+                        onReset={() => {
+                            setCurrentIteration(0);
+                            setIsPlaying(false);
+                        }}
+                        learningRate={learningRate}
+                        onLearningRateChange={setLearningRate}
+                        lrMin={0.001}
+                        lrMax={1}
+                        lrStep={0.001}
+                        iteration={currentIteration}
+                        maxIteration={(activeData?.steps?.length ?? 1) - 1}
+                        onIterationChange={setCurrentIteration}
+                    />
 
-                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 flex-1 min-h-0">
+                    <div className={styles.plots}>
                         {vizMode === '2d' ? (
                             <>
                                 <RegressionPlot data={data?.data} currentStep={currentStep} />

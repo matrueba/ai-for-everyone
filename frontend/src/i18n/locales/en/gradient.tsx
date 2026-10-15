@@ -177,23 +177,23 @@ export const gradient: Dict["gradient"] = {
         legend: {
             y: (
                 <>
-                    <span className="font-bold text-slate-800">y:</span> the model's prediction (estimated price).
+                    <strong>y:</strong> the model's prediction (estimated price).
                 </>
             ),
             x: (
                 <>
-                    <span className="font-bold text-slate-800">X₁ / X₂:</span> input variables (m² and location score).
+                    <strong>X₁ / X₂:</strong> input variables (m² and location score).
                 </>
             ),
             w: (
                 <>
-                    <span className="font-bold text-slate-800">W₁ / W₂:</span> parameters, i.e. the weight of each
+                    <strong>W₁ / W₂:</strong> parameters, i.e. the weight of each
                     feature.
                 </>
             ),
             b: (
                 <>
-                    <span className="font-bold text-slate-800">b:</span> baseline offset parameter (bias).
+                    <strong>b:</strong> baseline offset parameter (bias).
                 </>
             ),
         },
@@ -267,29 +267,29 @@ export const gradient: Dict["gradient"] = {
         legend: {
             y: (
                 <>
-                    <span className="font-bold text-slate-800">y:</span> predicted probability (between 0 and 1) of
+                    <strong>y:</strong> predicted probability (between 0 and 1) of
                     admission.
                 </>
             ),
             z: (
                 <>
-                    <span className="font-bold text-slate-800">z:</span> linear combination of the features.
+                    <strong>z:</strong> linear combination of the features.
                 </>
             ),
             x: (
                 <>
-                    <span className="font-bold text-slate-800">X₁ / X₂:</span> input variables (hours and exam score).
+                    <strong>X₁ / X₂:</strong> input variables (hours and exam score).
                 </>
             ),
             w: (
                 <>
-                    <span className="font-bold text-slate-800">W₁ / W₂ / b:</span> weights and bias that define the
+                    <strong>W₁ / W₂ / b:</strong> weights and bias that define the
                     decision boundary.
                 </>
             ),
             sigma: (
                 <>
-                    <span className="font-bold text-slate-800">σ():</span> the sigmoid function.
+                    <strong>σ():</strong> the sigmoid function.
                 </>
             ),
         },

@@ -1,11 +1,15 @@
 import React, { useMemo } from 'react';
-import Plotly from 'plotly.js-dist-min';
-import createPlotlyComponentModule from 'react-plotly.js/factory';
-
-const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
-const Plot = createPlotlyComponent(Plotly);
-
+import PlotPanel, { Readout } from './PlotPanel';
+import { Status } from '../ui/Bits';
+import Scene3D from '../three/Scene3D';
+import Axes3D from '../three/Axes3D';
+import { Contours, Surface } from '../three/Surface';
+import { Points } from '../three/Points';
+import { KeyLegend, RampLegend } from '../three/Legend';
+import { extent, probabilityRamp, worldScales } from '../three/scale';
+import { useChartTheme } from '../charts/chartTheme';
 import { useT } from '../../i18n';
+import { EQUATION } from './chartStyles';
 
 import type { PlotData, Step } from './types';
 
@@ -19,146 +23,88 @@ const linspace = (start: number, stop: number, num: number) => {
     return Array.from({ length: num }, (_, i) => start + step * i);
 };
 
+const sigmoid = (z: number) => 1 / (1 + Math.exp(-Math.max(-50, Math.min(50, z))));
+
+const EMPTY: number[] = [];
+const SURFACE_RES = 40;
+const BOUNDARY = [0.5];
+
 const LogisticRegressionPlot3D: React.FC<LogisticRegressionPlot3DProps> = ({ data, currentStep }) => {
     const common = useT('common');
     const t = useT('gradient').plots.logistic3d;
+    const { palette } = useChartTheme();
 
-    if (!data || !currentStep) return (
-        <div className="flex items-center justify-center h-[500px] bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-            {common.states.noData}
-        </div>
-    );
+    const x1 = data?.x1 ?? EMPTY;
+    const x2 = data?.x2 ?? EMPTY;
+    const y = data?.y ?? EMPTY;
+    const { w1 = 0, w2 = 0, b = 0 } = currentStep ?? {};
 
-    const { x1 = [], x2 = [], y = [] } = data;
-    const { w1 = 0, w2 = 0, b = 0, iteration, cost } = currentStep;
+    const ramp = useMemo(() => probabilityRamp(palette), [palette]);
+    const scales = useMemo(() => worldScales(extent(x1), extent(x2), [0, 1]), [x1, x2]);
 
-    // Generate sigmoid surface data
-    const surfaceData = useMemo(() => {
-        const x1Min = Math.min(...(x1.length ? x1 : [0]));
-        const x1Max = Math.max(...(x1.length ? x1 : [1]));
-        const x2Min = Math.min(...(x2.length ? x2 : [0]));
-        const x2Max = Math.max(...(x2.length ? x2 : [1]));
+    // Sigmoid surface: height and colour are the predicted probability of class 1.
+    const surface = useMemo(() => {
+        const xs = linspace(...scales.x.domain, SURFACE_RES);
+        const ys = linspace(...scales.y.domain, SURFACE_RES);
+        const z = ys.map(x2Val => xs.map(x1Val => sigmoid(w1 * x1Val + w2 * x2Val + b)));
+        return { xs, ys, z };
+    }, [scales, w1, w2, b]);
 
-        const x1Range = linspace(x1Min, x1Max, 30);
-        const x2Range = linspace(x2Min, x2Max, 30);
-
-        const zSurface = x2Range.map(x2Val =>
-            x1Range.map(x1Val => {
-                const z = w1 * x1Val + w2 * x2Val + b;
-                const zClipped = Math.max(-50, Math.min(50, z)); // prevent overflow
-                return 1 / (1 + Math.exp(-zClipped));
-            })
+    if (!data || !currentStep) {
+        return (
+            <PlotPanel title={t.title} subtitle={t.subtitle}>
+                <Status kind="empty" fill>{common.states.noData}</Status>
+            </PlotPanel>
         );
+    }
 
-        return { x: x1Range, y: x2Range, z: zSurface };
-    }, [x1, x2, w1, w2, b]);
+    const { iteration, cost } = currentStep;
 
     return (
-        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-1 shrink-0">
-                <div>
-                    <h3 className="text-base font-bold text-slate-800">{t.title}</h3>
-                    <p className="text-xs text-slate-500">{t.subtitle}</p>
-                </div>
-                <div className="text-right">
-                    <span className="text-xs font-medium text-slate-600 block">{t.iteration} <span className="font-mono text-indigo-600">{iteration}</span></span>
-                    <span className="text-xs font-medium text-slate-600 block">{t.logLoss} <span className="font-mono text-rose-500">{cost?.toFixed(4)}</span></span>
-                </div>
-            </div>
-
-            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0 p-1">
-                <Plot
-                    data={[
-                        // The actual dataset scatter points
-                        {
-                            x: x1,
-                            y: x2,
-                            z: y,
-                            type: 'scatter3d',
-                            mode: 'markers',
-                            marker: {
-                                size: 4,
-                                color: y.map(val => val === 1 ? '#6366f1' : '#ef4444'),
-                                opacity: 0.8
-                            },
-                            name: t.studentsName
-                        } as any,
-                        // The fitted sigmoid surface
-                        {
-                            x: surfaceData.x,
-                            y: surfaceData.y,
-                            z: surfaceData.z,
-                            type: 'surface',
-                            colorscale: [
-                                [0, 'rgba(239, 68, 68, 0.6)'],   // Red for lower probabilities
-                                [0.5, 'rgba(255, 255, 255, 0.4)'], // Whiteish for border
-                                [1, 'rgba(99, 102, 241, 0.6)']   // Indigo for higher probabilities
-                            ],
-                            showscale: false,
-                            opacity: 0.8,
-                            contours: {
-                                z: {
-                                    show: true,
-                                    usecolormap: true,
-                                    highlightcolor: "white",
-                                    project: { z: true } // project to base
-                                },
-                                x: { show: false },
-                                y: { show: false }
-                            },
-                            name: t.surfaceName,
-                            hoverinfo: 'none'
-                        } as any
-                    ]}
-                    layout={{
-                        autosize: true,
-                        height: 500,
-                        margin: { l: 0, r: 0, b: 0, t: 0 },
-                        scene: {
-                            xaxis: {
-                                title: t.xLabel,
-                                gridcolor: 'white',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(248, 250, 252)'
-                            },
-                            yaxis: {
-                                title: t.yLabel,
-                                gridcolor: 'white',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(248, 250, 252)'
-                            },
-                            zaxis: {
-                                title: t.zLabel,
-                                range: [-0.1, 1.1],
-                                gridcolor: 'white',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(241, 245, 249)'
-                            },
-                            camera: {
-                                eye: { x: 1.5, y: 1.5, z: 1.2 }
-                            }
-                        },
-                        showlegend: true,
-                        legend: {
-                            x: 0,
-                            y: 1
-                        }
-                    }}
-                    config={{
-                        displayModeBar: false,
-                        responsive: true
-                    }}
-                    className="w-full"
+        <PlotPanel
+            title={t.title}
+            subtitle={t.subtitle}
+            actions={
+                <>
+                    <Readout label={t.iteration} value={iteration} />
+                    <Readout label={t.logLoss} value={cost?.toFixed(4)} tone="red" />
+                </>
+            }
+            footer={
+                <code className={EQUATION}>
+                    {t.footerLabel}: P(y=1) = σ({w1?.toFixed(2)}·{t.formulaVars.hours} {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·{t.formulaVars.score} {b >= 0 ? '+' : ''} {b?.toFixed(2)})
+                </code>
+            }
+        >
+            <Scene3D
+                label={t.title}
+                legend={
+                    <>
+                        <RampLegend ramp={ramp} low="P = 0" high="P = 1" />
+                        <KeyLegend
+                            items={[
+                                { label: `${t.studentsName} · y = 1`, color: palette.indigo },
+                                { label: `${t.studentsName} · y = 0`, color: palette.red },
+                                { label: common.chart3d.boundary, color: palette.textStrong, shape: 'line' },
+                            ]}
+                        />
+                    </>
+                }
+            >
+                <Axes3D scales={scales} x={{ label: t.xLabel }} y={{ label: t.yLabel }} z={{ label: t.zLabel }} />
+                <Points x={x1} y={x2} z={y} scales={scales} color={i => ((y[i] ?? 0) === 1 ? palette.indigo : palette.red)} />
+                <Surface xs={surface.xs} ys={surface.ys} z={surface.z} scales={scales} colorRamp={ramp} opacity={0.72} />
+                <Contours
+                    xs={surface.xs}
+                    ys={surface.ys}
+                    z={surface.z}
+                    scales={scales}
+                    levels={BOUNDARY}
+                    colorFor={() => palette.textStrong}
+                    lineWidth={2.2}
                 />
-            </div>
-
-            <div className="mt-1 p-2 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between shrink-0">
-                <span className="text-xs font-medium text-slate-600">{t.footerLabel}</span>
-                <span className="text-xs font-mono font-bold text-indigo-600 whitespace-nowrap overflow-x-auto ml-4">
-                    P(y=1) = σ({w1?.toFixed(2)}·{t.formulaVars.hours} {w2 >= 0 ? '+' : ''} {w2?.toFixed(2)}·{t.formulaVars.score} {b >= 0 ? '+' : ''} {b?.toFixed(2)})
-                </span>
-            </div>
-        </div>
+            </Scene3D>
+        </PlotPanel>
     );
 };
 

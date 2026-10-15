@@ -1,0 +1,66 @@
+.ramp {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 120px;
+}
+
+.bar {
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.rampLabels {
+  display: flex;
+  justify-content: space-between;
+  color: var(--text-tertiary);
+}
+
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px var(--space-4);
+  padding: 0;
+  list-style: none;
+}
+
+.keys li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 14px;
+  height: 8px;
+  display: inline-block;
+}
+
+.swatch[data-shape="dot"] {
+  width: 9px;
+  height: 9px;
+  margin-inline: 2px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.swatch[data-shape="line"] {
+  height: 3px;
+  border-radius: 2px;
+  background: currentColor;
+}
+
+.swatch[data-shape="ring"] {
+  width: 10px;
+  height: 10px;
+  margin-inline: 2px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+}
+
+.swatch[data-shape="arrow"] {
+  height: 8px;
+  clip-path: polygon(0 40%, 60% 40%, 60% 0, 100% 50%, 60% 100%, 60% 60%, 0 60%);
+  background: currentColor;
+}

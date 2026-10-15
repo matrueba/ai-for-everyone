@@ -1,11 +1,15 @@
 import React, { useMemo } from 'react';
-import Plotly from 'plotly.js-dist-min';
-import createPlotlyComponentModule from 'react-plotly.js/factory';
-
-const createPlotlyComponent = (createPlotlyComponentModule as any).default || createPlotlyComponentModule;
-const Plot = createPlotlyComponent(Plotly);
-
+import PlotPanel from './PlotPanel';
+import { Stat, Status } from '../ui/Bits';
+import Scene3D from '../three/Scene3D';
+import Axes3D from '../three/Axes3D';
+import { Contours, Surface } from '../three/Surface';
+import DescentPath from '../three/DescentPath';
+import { KeyLegend, RampLegend } from '../three/Legend';
+import { HALF, clamp, costRamp, extent, formatTick, sampleGrid, worldScales } from '../three/scale';
+import { useChartTheme } from '../charts/chartTheme';
 import { useT } from '../../i18n';
+import styles from './Plot3D.module.css';
 
 import type { Step, SurfaceData } from './types';
 
@@ -18,164 +22,98 @@ interface Backprop3DProps {
 // Log transform to compress high-cost peaks and reveal the valley
 const logTransform = (v: number) => Math.log(1 + v);
 
+const CONTOUR_LEVELS = 9;
+
 const Backprop3D: React.FC<Backprop3DProps> = ({ surface, steps, currentIteration }) => {
     const common = useT('common');
     const t = useT('gradient').plots.backprop3d;
+    const { palette } = useChartTheme();
 
-    if (!surface || !steps || steps.length === 0) return (
-        <div className="flex items-center justify-center h-full bg-slate-50 rounded-xl border border-dashed border-slate-200 text-slate-400">
-            {common.states.noData3d}
-        </div>
-    );
+    const ramp = useMemo(() => costRamp(palette), [palette]);
+
+    const landscape = useMemo(() => {
+        if (!surface?.x || !surface.y || surface.z.length === 0) return null;
+        const z = surface.z.map(row => row.map(logTransform));
+        const zDomain = extent(z.flat());
+        const scales = worldScales(extent(surface.x), extent(surface.y), [Math.max(0, zDomain[0]), zDomain[1]]);
+        const [lo, hi] = scales.z.domain;
+        const levels = Array.from({ length: CONTOUR_LEVELS }, (_, k) => lo + ((k + 0.5) / CONTOUR_LEVELS) * (hi - lo));
+        return { xs: surface.x, ys: surface.y, z, scales, levels };
+    }, [surface]);
+
+    // Every step placed on the landscape (sampled from the surface so the ball rolls on it).
+    const pathPoints = useMemo(() => {
+        if (!landscape || !steps) return [];
+        const { xs, ys, z, scales } = landscape;
+        return steps.map(s => {
+            const w1 = s.w1 ?? 0;
+            const w2 = s.w2 ?? 0;
+            return [
+                clamp(scales.x(w1), -HALF, HALF),
+                scales.z(sampleGrid(xs, ys, z, w1, w2)),
+                clamp(scales.y(w2), -HALF, HALF),
+            ] as [number, number, number];
+        });
+    }, [landscape, steps]);
+
+    if (!landscape || !steps || steps.length === 0) {
+        return (
+            <PlotPanel title={t.title} subtitle={t.subtitle}>
+                <Status kind="empty" fill>{common.states.noData3d}</Status>
+            </PlotPanel>
+        );
+    }
 
     const currentStep = steps[currentIteration] || steps[0];
-
-    // Transform surface Z with log scale
-    const logSurfaceZ = useMemo(() =>
-        surface.z.map(row => row.map(v => logTransform(v))),
-        [surface.z]
-    );
-
-    // Path of the optimization (log-transformed for consistent scale)
-    const pathSlice = steps.slice(0, currentIteration + 1);
-    const pathX = pathSlice.map(s => s.w1);
-    const pathY = pathSlice.map(s => s.w2);
-    const pathZ = pathSlice.map(s => logTransform(s.cost));
+    const { xs, ys, z, scales, levels } = landscape;
+    const levelColor = (level: number) => ramp((level - scales.z.domain[0]) / (scales.z.domain[1] - scales.z.domain[0] || 1));
 
     return (
-        <div className="card-elevated p-3 flex flex-col h-full min-h-0">
-            <div className="flex items-center justify-between mb-1 shrink-0">
-                <div>
-                    <h3 className="text-base font-bold text-slate-800">{t.title}</h3>
-                    <p className="text-xs text-slate-500">{t.subtitle}</p>
+        <PlotPanel
+            title={t.title}
+            subtitle={t.subtitle}
+            footer={
+                <div className={styles.stats}>
+                    <Stat label={t.statW1} value={currentStep?.w1?.toFixed(4) ?? "0.0000"} />
+                    <Stat label={t.statW2} value={currentStep?.w2?.toFixed(4) ?? "0.0000"} />
+                    <Stat label={t.statCost} value={currentStep?.cost?.toFixed(4) ?? "0.0000"} tone="red" />
                 </div>
-            </div>
-
-            <div className="flex-1 relative overflow-hidden rounded-xl bg-slate-50/50 min-h-0 p-1">
-                <Plot
-                    data={[
-                        {
-                            z: logSurfaceZ,
-                            x: surface.x,
-                            y: surface.y,
-                            type: 'surface',
-                            colorscale: 'Viridis',
-                            showscale: false,
-                            opacity: 1.0,
-                            lighting: {
-                                ambient: 0.45,
-                                diffuse: 0.55,
-                                roughness: 0.4,
-                                specular: 0.5,
-                                fresnel: 0.15
-                            },
-                            contours: {
-                                z: {
-                                    show: true,
-                                    usecolormap: true,
-                                    highlightcolor: "#444",
-                                    project: { z: true },
-                                    width: 1
-                                }
-                            }
-                        } as any,
-                        {
-                            x: pathX,
-                            y: pathY,
-                            z: pathZ,
-                            type: 'scatter3d',
-                            mode: 'lines+markers',
-                            marker: {
-                                size: 5,
-                                color: '#ef4444',
-                                opacity: 0.9
-                            },
-                            line: {
-                                width: 10,
-                                color: '#ef4444',
-                            },
-                            name: t.pathName
-                        } as any,
-                        {
-                            x: [currentStep?.w1 ?? 0],
-                            y: [currentStep?.w2 ?? 0],
-                            z: [logTransform(currentStep?.cost ?? 0)],
-                            type: 'scatter3d',
-                            mode: 'markers',
-                            marker: {
-                                size: 12,
-                                color: '#fff',
-                                symbol: 'circle',
-                                line: {
-                                    color: '#ef4444',
-                                    width: 4
-                                }
-                            },
-                            name: t.currentName
-                        } as any
-                    ]}
-                    layout={{
-                        autosize: true,
-                        margin: { l: 0, r: 0, b: 0, t: 0 },
-                        scene: {
-                            xaxis: {
-                                title: { text: 'W₁' },
-                                gridcolor: 'rgb(255, 255, 255)',
-                                zerolinecolor: 'rgb(255, 255, 255)',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(230, 230,230)'
-                            },
-                            yaxis: {
-                                title: { text: 'W₂' },
-                                gridcolor: 'rgb(255, 255, 255)',
-                                zerolinecolor: 'rgb(255, 255, 255)',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(230, 230,230)'
-                            },
-                            zaxis: {
-                                title: { text: t.axisCost },
-                                gridcolor: 'rgb(255, 255, 255)',
-                                zerolinecolor: 'rgb(255, 255, 255)',
-                                showbackground: true,
-                                backgroundcolor: 'rgb(230, 230,230)'
-                            },
-                            camera: {
-                                eye: { x: 1.2, y: 0.6, z: 1.2 }
-                            }
-                        },
-                        paper_bgcolor: 'rgba(0,0,0,0)',
-                        plot_bgcolor: 'rgba(0,0,0,0)',
-                        legend: {
-                            x: 0,
-                            y: 1,
-                            bgcolor: 'rgba(255, 255, 255, 0.5)'
-                        }
-                    }}
-                    config={{
-                        responsive: true,
-                        displayModeBar: true,
-                        modeBarButtonsToRemove: ['lasso2d', 'select2d']
-                    }}
-                    className="w-full h-full"
-                    style={{ minHeight: 0 }}
+            }
+        >
+            <Scene3D
+                label={t.title}
+                legend={
+                    <>
+                        <RampLegend ramp={ramp} low={common.chart3d.costLow} high={common.chart3d.costHigh} />
+                        <KeyLegend
+                            items={[
+                                { label: t.currentName, color: palette.orange },
+                                { label: common.chart3d.nextStep, color: palette.red, shape: 'arrow' },
+                                { label: t.pathName, color: palette.orange, shape: 'line' },
+                                { label: common.chart3d.start, color: palette.orange, shape: 'ring' },
+                            ]}
+                        />
+                    </>
+                }
+            >
+                <Axes3D
+                    scales={scales}
+                    x={{ label: 'W₁' }}
+                    y={{ label: 'W₂' }}
+                    z={{ label: t.axisCost, format: v => formatTick(Math.exp(v) - 1) }}
                 />
-            </div>
-
-            <div className="mt-1 grid grid-cols-3 gap-2 shrink-0">
-                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">{t.statW1}</span>
-                    <span className="text-sm font-mono font-bold text-slate-700">{currentStep?.w1?.toFixed(4) ?? "0.0000"}</span>
-                </div>
-                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">{t.statW2}</span>
-                    <span className="text-sm font-mono font-bold text-slate-700">{currentStep?.w2?.toFixed(4) ?? "0.0000"}</span>
-                </div>
-                <div className="bg-slate-50 p-1.5 rounded-lg border border-slate-100">
-                    <span className="block text-[9px] uppercase font-bold text-slate-400 mb-0.5">{t.statCost}</span>
-                    <span className="text-sm font-mono font-bold text-rose-500">{currentStep?.cost?.toFixed(4) ?? "0.0000"}</span>
-                </div>
-            </div>
-        </div>
+                <Surface xs={xs} ys={ys} z={z} scales={scales} colorRamp={ramp} opacity={0.94} />
+                <Contours xs={xs} ys={ys} z={z} scales={scales} levels={levels} colorFor={levelColor} where="floor" />
+                <Contours xs={xs} ys={ys} z={z} scales={scales} levels={levels} colorFor={() => palette.surface} where="surface" lineWidth={1} />
+                <DescentPath
+                    points={pathPoints}
+                    current={currentIteration}
+                    color={palette.orange}
+                    ballColor={palette.orange}
+                    arrowColor={palette.red}
+                />
+            </Scene3D>
+        </PlotPanel>
     );
 };
 

@@ -1,88 +1,143 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import Icon from "./ui/Icon";
+import Tabs from "./ui/Tabs";
 import { LANGS, useI18n, useT } from "../i18n";
+import { THEMES, useTheme } from "../theme";
+import type { Theme } from "../theme";
 import type { PageId } from "../i18n/content-types";
+import { NAV_GROUPS, PAGE_META, formatStep } from "../navigation";
+import { fetchHealth } from "../api";
+import styles from "./Sidebar.module.css";
 
 interface SidebarProps {
   activePage: PageId;
-  setActivePage: (page: PageId) => void;
+  onNavigate: (page: PageId) => void;
+  /** Off-canvas state on narrow screens; ignored on desktop where the sidebar is always shown. */
+  open: boolean;
+  onClose: () => void;
 }
 
-/** Order of the nav entries; the labels themselves come from the active locale. */
-const MENU_ORDER: PageId[] = [
-  "home",
-  "history",
-  "train",
-  "gradient-descent",
-  "inference",
-  "neural-network",
-  "evaluation",
-  "visualizer",
-];
+type BackendStatus = "checking" | "online" | "offline";
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage, setActivePage }) => {
+const HEALTH_INTERVAL_MS = 30_000;
+const REPO_URL = "https://github.com";
+
+const THEME_ICONS = { light: "sun", dark: "moon" } as const;
+
+/** Polls `/api/health` so the status dot reflects the real backend, not a hardcoded "online". */
+function useBackendStatus(): BackendStatus {
+  const [status, setStatus] = useState<BackendStatus>("checking");
+
+  useEffect(() => {
+    let cancelled = false;
+    const check = () =>
+      fetchHealth()
+        .then(() => !cancelled && setStatus("online"))
+        .catch(() => !cancelled && setStatus("offline"));
+    check();
+    const timer = window.setInterval(check, HEALTH_INTERVAL_MS);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
+
+  return status;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ activePage, onNavigate, open, onClose }) => {
   const t = useT("common");
   const { lang, setLang } = useI18n();
+  const { theme, setTheme } = useTheme();
+  const status = useBackendStatus();
+
+  const statusLabel = {
+    checking: t.sidebar.backendChecking,
+    online: t.sidebar.backendOnline,
+    offline: t.sidebar.backendOffline,
+  }[status];
+
+  const renderItem = (id: PageId) => {
+    const meta = PAGE_META[id];
+    const active = id === activePage;
+    return (
+      <li key={id}>
+        <button
+          type="button"
+          className={styles.item}
+          aria-current={active ? "page" : undefined}
+          onClick={() => onNavigate(id)}
+        >
+          <span className={styles.itemIcon}>
+            <Icon name={meta.icon} size={17} />
+          </span>
+          <span className={styles.itemLabel}>{t.menu[id]}</span>
+          {meta.step !== undefined && <span className={styles.itemStep}>{formatStep(meta.step)}</span>}
+        </button>
+      </li>
+    );
+  };
 
   return (
-    <aside className="w-64 h-full bg-white border-r border-border-subtle flex flex-col z-20 overflow-y-auto">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-10">
-          <span className="text-sm font-bold tracking-tight bg-gradient-to-r from-accent-indigo to-accent-cyan bg-clip-text text-transparent">
-            {t.appName}
+    <aside id="app-sidebar" className={styles.sidebar} data-open={open || undefined}>
+      <div className={styles.brandRow}>
+        <button type="button" className={styles.brand} onClick={() => onNavigate("home")}>
+          <span className={styles.logo}>
+            <Icon name="sparkles" size={18} />
           </span>
-        </div>
-
-        <nav className="space-y-1.5">
-          {MENU_ORDER.map((id) => (
-            <button
-              key={id}
-              onClick={() => setActivePage(id)}
-              className={`w-full flex items-center gap-3 px-2 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${activePage === id
-                ? "bg-accent-indigo/10 text-accent-indigo"
-                : "text-text-secondary hover:bg-surface-secondary hover:text-text-primary"
-                }`}
-            >
-              {t.menu[id]}
-              {activePage === id && (
-                <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent-indigo shadow-[0_0_8px_rgba(79,70,229,0.6)]" />
-              )}
-            </button>
-          ))}
-        </nav>
+          <span className={styles.brandName}>{t.appName}</span>
+        </button>
+        <button type="button" className={styles.closeButton} onClick={onClose} aria-label={t.nav.closeMenu}>
+          <Icon name="close" size={18} />
+        </button>
       </div>
 
-      <div className="mt-auto p-6 border-t border-border-subtle space-y-4">
-        {/* Language switcher */}
-        <div>
-          <p className="text-[0.65rem] font-bold text-text-tertiary uppercase tracking-widest mb-2">
-            {t.language.label}
-          </p>
-          <div className="flex bg-surface-secondary rounded-lg p-1 gap-1">
-            {LANGS.map((code) => (
-              <button
-                key={code}
-                onClick={() => setLang(code)}
-                aria-pressed={lang === code}
-                className={`flex-1 px-2 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${lang === code
-                  ? "bg-white text-accent-indigo shadow-sm"
-                  : "text-text-tertiary hover:text-text-primary"
-                  }`}
-              >
-                {t.language[code]}
-              </button>
-            ))}
+      <nav className={styles.nav} aria-label={t.nav.label}>
+        <ul className={styles.list}>{renderItem("home")}</ul>
+
+        {NAV_GROUPS.map((group) => (
+          <div key={group.id} className={styles.group}>
+            <p className={styles.groupLabel}>{t.nav.groups[group.id]}</p>
+            <ul className={styles.list}>{group.pages.map(renderItem)}</ul>
           </div>
+        ))}
+      </nav>
+
+      <div className={styles.footer}>
+        <div className={styles.setting}>
+          <p className={styles.settingLabel}>{t.language.label}</p>
+          <Tabs
+            label={t.language.label}
+            size="sm"
+            block
+            value={lang}
+            onChange={setLang}
+            items={LANGS.map((code) => ({ id: code, label: t.language[code] }))}
+          />
         </div>
 
-        <div className="bg-surface-secondary rounded-xl p-4">
-          <p className="text-[0.65rem] font-bold text-text-tertiary uppercase tracking-widest mb-2">
-            {t.sidebar.status}
-          </p>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-accent-green animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-            <span className="text-xs font-medium text-text-secondary">{t.sidebar.backendOnline}</span>
-          </div>
+        <div className={styles.setting}>
+          <p className={styles.settingLabel}>{t.theme.label}</p>
+          <Tabs<Theme>
+            label={t.theme.label}
+            size="sm"
+            block
+            value={theme}
+            onChange={setTheme}
+            items={THEMES.map((id) => ({ id, icon: THEME_ICONS[id], label: t.theme[id] }))}
+          />
         </div>
+
+        <div className={styles.meta}>
+          <span className={styles.status} data-status={status} role="status">
+            <span className={styles.statusDot} aria-hidden />
+            {statusLabel}
+          </span>
+          <a className={styles.repo} href={REPO_URL} target="_blank" rel="noreferrer" aria-label={t.footer.github}>
+            <Icon name="github" size={16} />
+          </a>
+        </div>
+        <p className={styles.copyright}>{t.footer.copyright}</p>
       </div>
     </aside>
   );

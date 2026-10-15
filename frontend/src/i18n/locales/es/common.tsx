@@ -14,9 +14,39 @@ export const common = {
         visualizer: "Visualizador de Atención",
     } satisfies MenuLabels,
 
+    nav: {
+        label: "Navegación principal",
+        groups: {
+            fundamentals: "Fundamentos",
+            networks: "Redes neuronales y LLMs",
+        },
+        openMenu: "Abrir menú",
+        closeMenu: "Cerrar menú",
+        next: "Siguiente paso",
+    },
+
     sidebar: {
         status: "Estado",
         backendOnline: "Backend conectado",
+        backendOffline: "Backend no disponible",
+        backendChecking: "Comprobando backend…",
+    },
+
+    chart3d: {
+        resetView: "Volver a la vista inicial",
+        dragHint: "Arrastra para girar · rueda para acercar",
+        costLow: "coste bajo",
+        costHigh: "coste alto",
+        start: "Inicio",
+        nextStep: "Siguiente paso (−∇)",
+        residuals: "Errores (residuos)",
+        boundary: "Frontera p = 0,5",
+    },
+
+    theme: {
+        label: "Tema",
+        light: "Claro",
+        dark: "Oscuro",
     },
 
     language: {

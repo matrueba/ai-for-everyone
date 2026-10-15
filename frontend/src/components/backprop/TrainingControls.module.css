@@ -1,0 +1,94 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+}
+
+.buttons {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.lr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-left: var(--space-5);
+  border-left: 1px solid var(--border-subtle);
+}
+
+.lrLabel {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.lrInput {
+  width: 88px;
+  height: 36px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--surface-sunken);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.lrInput:focus {
+  outline: none;
+  border-color: var(--accent-indigo);
+  box-shadow: var(--focus-ring);
+}
+
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.bound {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.iteration {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 72px;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--accent-indigo) 8%, transparent);
+}
+
+.iterationLabel {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-indigo);
+  opacity: 0.75;
+}
+
+.iterationValue {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--accent-indigo);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .lr {
+    padding-left: 0;
+    border-left: 0;
+  }
+}
