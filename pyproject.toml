@@ -1,0 +1,22 @@
+[project]
+name = "lllm-explained"
+version = "0.1.0"
+description = "AI for Everyone: interactive visualizations of how LLMs and basic ML models work (FastAPI backend)"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.136,<1",
+    "uvicorn[standard]>=0.46,<1",
+    "pydantic>=2.13,<3",
+    "numpy>=2.4,<3",
+    "torch>=2.11,<3",
+    "transformers>=5.7,<6",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28",
+]
+
+[tool.uv]
+# The backend is run from the repo root, not installed as a package
+package = false

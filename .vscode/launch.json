@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/backend/main.py",
             "console": "integratedTerminal",
-            "python": "${workspaceFolder}/venv/bin/python"
+            "python": "${workspaceFolder}/.venv/bin/python"
 
         }
     ]

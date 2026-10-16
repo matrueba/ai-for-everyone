@@ -365,8 +365,8 @@ export const gradient = {
             pathName: "Camino de optimización",
             currentName: "Posición actual",
             axisCost: "Coste",
-            statW1: "W₁ (horas estudio)",
-            statW2: "W₂ (nota examen)",
+            statW1: "W₁",
+            statW2: "W₂",
             statCost: "Coste (Log Loss)",
         },
         logistic2d: {

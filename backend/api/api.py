@@ -1,6 +1,14 @@
-from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from backend.api.models import AttentionRequest, ModelInfo, GradientDescentRequest, InferenceRequest
+from backend.api.models import (
+    AttentionRequest,
+    ModelInfo,
+    GradientDescentRequest,
+    InferenceRequest,
+    MAX_ITERATIONS,
+    MAX_LEARNING_RATE,
+)
 from backend.transformer.transformer import Transformer
 from backend.api.controller import get_attention_data
 import json
@@ -22,16 +30,20 @@ class APIHandler:
         self.model = None
         self.tokenizer = None
         self.model_config = {}
-        self.app = FastAPI(title="Transformer API")
+        self.app = FastAPI(title="Transformer API", lifespan=self.lifespan)
         self.app.add_middleware(
             CORSMiddleware,
             allow_origins=["*"],
-            allow_credentials=True,
+            allow_credentials=False,
             allow_methods=["*"],
             allow_headers=["*"],
         )
-        self.app.on_event("startup")(self.load_model)
         self.setup_routes()
+
+    @asynccontextmanager
+    async def lifespan(self, app: FastAPI):
+        self.load_model()
+        yield
 
     def setup_routes(self):
         self.app.get("/api/health")(self.health)
@@ -46,8 +58,6 @@ class APIHandler:
         self.app.get("/api/nn-playground")(self.get_nn_playground)
 
     def load_model(self):
-        # Config path is in backend/config/transformer.json
-        # This file is in backend/transformer/api/api.py
         config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "config", "transformer.json"))
         if os.path.exists(config_path):
             with open(config_path, "r") as f:
@@ -83,10 +93,18 @@ class APIHandler:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
-    def get_adam_data(self, learning_rate: float = 0.01, iterations: int = 100):
+    def get_adam_data(
+        self,
+        learning_rate: float = Query(0.01, gt=0, le=MAX_LEARNING_RATE),
+        iterations: int = Query(100, ge=1, le=MAX_ITERATIONS),
+    ):
         return generate_adam_steps(iterations=iterations, learning_rate=learning_rate)
 
-    def get_adam_3d_data(self, learning_rate: float = 0.01, iterations: int = 100):
+    def get_adam_3d_data(
+        self,
+        learning_rate: float = Query(0.01, gt=0, le=MAX_LEARNING_RATE),
+        iterations: int = Query(100, ge=1, le=MAX_ITERATIONS),
+    ):
         return generate_adam_3d(iterations=iterations, learning_rate=learning_rate)
 
     def run_gradient_descent_matrix_handler(self, req: GradientDescentRequest):
@@ -99,7 +117,6 @@ class APIHandler:
             learning_rate=req.learning_rate
         )
         
-        # Add cost surface for visualization if applicable
         X_arr = np.array(req.X)
         if X_arr.ndim == 1 or (X_arr.ndim == 2 and X_arr.shape[1] == 1):
             # 1D case (1 feature)
@@ -140,28 +157,25 @@ class APIHandler:
 
 
     def predict(self, req: InferenceRequest):
-        try:
-            x = np.array(req.x)
-            weights = np.array(req.weights)
-            prediction = np.dot(x, weights) + req.bias
-            return {"prediction": float(prediction)}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        if len(req.x) != len(req.weights):
+            raise HTTPException(
+                status_code=422,
+                detail=f"x has {len(req.x)} features but weights has {len(req.weights)}"
+            )
+        prediction = np.dot(req.x, req.weights) + req.bias
+        return {"prediction": float(prediction)}
 
     def get_nn_playground(self):
         return self.nn_playground
 
     def get_inference_scenario(self, scenario: str = "generic"):
-        try:
-            if scenario in self.trained_linear_models:
-                data = self.trained_linear_models[scenario]
-                return {
-                    "X": data["x"],
-                    "y": data["y"],
-                    "weights": data["weights"],
-                    "bias": data["bias"]
-                }
-            else:
-                raise HTTPException(status_code=404, detail=f"Scenario '{scenario}' not found")
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+        if scenario not in self.trained_linear_models:
+            raise HTTPException(status_code=404, detail=f"Scenario '{scenario}' not found")
+
+        data = self.trained_linear_models[scenario]
+        return {
+            "X": data["x"],
+            "y": data["y"],
+            "weights": data["weights"],
+            "bias": data["bias"]
+        }

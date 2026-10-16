@@ -18,26 +18,20 @@ def get_attention_data(model, tokenizer, sentence_a: str, sentence_b: Optional[s
 
     is_pair = bool(sentence_b)
 
+    # The positional encoding table caps the sequence length, so truncate to it
+    max_length = model.positional_encoding.size(1)
+
     # Tokenize
     if is_pair:
-        encoded = tokenizer.encode_plus(sentence_a, sentence_b, return_tensors="pt")
+        encoded = tokenizer(sentence_a, sentence_b, return_tensors="pt", truncation=True, max_length=max_length)
         tokens_tensor = encoded["input_ids"]
-        token_type_ids = encoded.get("token_type_ids")
-        if token_type_ids is not None:
-            type_ids = token_type_ids[0].tolist()
-            tokens_a = [tokenizer.convert_ids_to_tokens([tid])[0] for i, tid in enumerate(tokens_tensor[0].tolist()) if type_ids[i] == 0]
-            tokens_b = [tokenizer.convert_ids_to_tokens([tid])[0] for i, tid in enumerate(tokens_tensor[0].tolist()) if type_ids[i] == 1]
-        else:
-            tokens_a = tokenizer.convert_ids_to_tokens(
-                tokenizer.encode(sentence_a, add_special_tokens=True)
-            )
-            tokens_b = tokenizer.convert_ids_to_tokens(
-                tokenizer.encode(sentence_b, add_special_tokens=True)
-            )
+        tokens = tokenizer.convert_ids_to_tokens(tokens_tensor[0].tolist())
+        type_ids = encoded["token_type_ids"][0].tolist()
+        tokens_a = [tok for tok, type_id in zip(tokens, type_ids) if type_id == 0]
+        tokens_b = [tok for tok, type_id in zip(tokens, type_ids) if type_id == 1]
     else:
-        tokens_tensor = tokenizer.encode(sentence_a, return_tensors="pt")
-        token_type_ids = None
-        tokens_a = tokenizer.convert_ids_to_tokens(tokens_tensor[0])
+        tokens_tensor = tokenizer(sentence_a, return_tensors="pt", truncation=True, max_length=max_length)["input_ids"]
+        tokens_a = tokenizer.convert_ids_to_tokens(tokens_tensor[0].tolist())
         tokens_b = None
 
     # Forward pass
